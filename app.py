@@ -25,15 +25,9 @@ api.add_resource(Items, "/items")
 api.add_resource(Store, "/store/<string:name>")
 api.add_resource(Stores, "/stores")
 
-# this will create tables in db before first request
-@app.before_first_request
-def create_tables():
-    db.create_all()
-
 
 if __name__ == "__main__":
     # to avoid circular imports
     from db import db
     db.init_app(app)
-
     app.run(debug=True)
