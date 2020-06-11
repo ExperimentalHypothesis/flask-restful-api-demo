@@ -16,7 +16,7 @@ app = Flask(__name__)
 app.secret_key = "sadaddaf"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL","sqlite:///data.db")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("sqlite:///data.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
 
 # initializing app extension
 api = Api(app)
@@ -30,8 +30,14 @@ api.add_resource(Store, "/store/<string:name>")
 api.add_resource(Stores, "/stores")
 
 
+# when developing..
 if __name__ == "__main__":
-    # to avoid circular imports
+
+    # this will create tables in db before first request
+    @app.before_first_request
+    def create_tables():
+        db.create_all()
+
     from db import db
     db.init_app(app)
     app.run(debug=True)
