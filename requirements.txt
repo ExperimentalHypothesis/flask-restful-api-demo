@@ -4,4 +4,4 @@ flask_jwt==0.3.2
 flask_restful==0.3.8
 uwsgi
 psycopg2
-
+markdown

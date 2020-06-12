@@ -27,7 +27,7 @@ class Item(Resource):
         """ endponint for creating an item, it does not accept full json, but parses it and uses only {price: <float>} """
 
         if ItemModel.find_item_by_name(name):
-            return{"message": f"item {name} already exists"}, 400 # bad request - fault of client
+            return{"message": "item already exists"}, 400 # bad request - fault of client
 
         data = Item.parser.parse_args()
         new_item = ItemModel(name, **data) # data["price"], data["store_id"]
@@ -46,7 +46,7 @@ class Item(Resource):
         if item:
             item.delete_from_db()
 
-        return {"message" : f"item {name} deleted"}
+        return {"message" : "item deleted"}
         
 
     def put(self, name):

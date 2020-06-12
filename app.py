@@ -1,5 +1,4 @@
-import os
-
+import os, markdown
 
 from flask import Flask
 from flask_restful import Api
@@ -15,8 +14,8 @@ from resources.store import Store, Stores
 app = Flask(__name__)
 app.secret_key = "sadaddaf"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-# app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL","sqlite:///data.db")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL","sqlite:///data.db")
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
 
 # initializing app extension
 api = Api(app)
@@ -28,6 +27,15 @@ api.add_resource(Item, "/item/<string:name>")
 api.add_resource(Items, "/items")
 api.add_resource(Store, "/store/<string:name>")
 api.add_resource(Stores, "/stores")
+
+@app.route("/")
+def index():
+    """ Index route display documentation """
+
+    with open(os.path.join(os.path.dirname(__file__), "README.md"), "r") as md:
+        content = md.read()
+        return markdown.markdown(content)
+
 
 
 # when developing..

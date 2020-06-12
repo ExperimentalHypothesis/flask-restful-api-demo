@@ -15,13 +15,13 @@ class Store(Resource):
         try:
             store = StoreModel.find_by_name(name)
         except Exception as e:
-            return {"message" : f"error {e} occured when finding store"}, 500
+            return {"message" : "error occured when finding store"}, 500
         # if found, return it
         if store:
             return store.json(), 200 
         # i not found, return 404
         else:
-            return {"message" : f"store {name} not found"}, 404
+            return {"message" : "store not found"}, 404
 
     def post(self, name):
         """ endpoint for creating new store """
@@ -32,7 +32,7 @@ class Store(Resource):
         # check if the store exists already
         store = StoreModel.find_by_name(name)
         if store:
-            return {"message" : f"store with name {name} already exists"}, 400
+            return {"message" : "store with name already exists"}, 400
 
         # if not create new one
         new_store = StoreModel(name)
@@ -40,7 +40,7 @@ class Store(Resource):
         try:
             new_store.save_to_db()
         except Exception as e:
-            return {"message" : "error {e} when adding to db"}, 500
+            return {"message" : "error when adding to db"}, 500
         # return result
         return new_store.json(), 201
 
@@ -51,14 +51,14 @@ class Store(Resource):
         try:
             store = StoreModel.find_by_name(name)
         except Exception as e:
-            return {"message" : "error {e} when finding the store"}
+            return {"message" : "error  when finding the store"}
         # if found, delete it
         if store:
             store.delete_from_db(), 200
         else:
-            return {"message" : f"store {name} not found"}, 404
+            return {"message" : "store not found"}, 404
 
-        return {"message" : f"item {name} deleted"}
+        return {"message" : "item deleted"}
 
     def put(self, name):
         """ endoint for upserting item """
