@@ -90,6 +90,17 @@ All responses have the form of JSON:
 ** reponse **
 - 404 Not Found if it does not exist
 
+### Update item:
+
+** definition **
+
+'PUT /item/<name>'
+
+** reponse **
+- 404 Not Found if it does not exist
+
+
+
 
 
 
