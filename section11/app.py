@@ -4,11 +4,9 @@ from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager # will need Bearer in the header not JWT
 
-from resources.user import UserRegister
+from resources.user import UserRegister, User, UserLogin, TokenRefresh
 from resources.item import Item, Items
 from resources.store import Store, Stores
-from resources.user import User, UserLogin
-
 
 app = Flask(__name__)
 app.secret_key = "sadaddaf"
@@ -30,7 +28,7 @@ def add_claims(identity):
         return {"is_admin": True}
     return {"is_admin": False}
     
-    
+
 # creating api endpoints
 api.add_resource(UserRegister, "/register")
 api.add_resource(Item, "/item/<string:name>") 
@@ -39,7 +37,7 @@ api.add_resource(Store, "/store/<string:name>")
 api.add_resource(Stores, "/stores")
 api.add_resource(User, "/user/<int:id>")
 api.add_resource(UserLogin, "/login")
-
+api.add_resource(TokenRefresh, "/refresh")
 
 
 @app.route("/")

@@ -10,7 +10,7 @@ class Item(Resource):
     parser.add_argument("price", type=float, required=True, help="price of the item")
     parser.add_argument("store_id", type=int, required=True, help="ID of store where the item belogs")
 
-    @jwt_required # no bracktes if i use JWT extended
+    @jwt_required # no bracktes if i use JWT extended - it can be fresh or non fresh token..
     def get(self, name):
         """ endpoint for getting one item by name """
 
@@ -23,7 +23,8 @@ class Item(Resource):
         return {"message": "item not found" }, 404
 
 
-    def post(self, name):
+    @fresh_jwt_required # this will accept only newly generated fresh token - the one you get after loging in
+    def post(self, name): 
         """ endponint for creating an item, it does not accept full json, but parses it and uses only {price: <float>} """
 
         if ItemModel.find_item_by_name(name):
@@ -86,4 +87,3 @@ class Items(Resource):
         return {
                 "items" : [item.name for item in ItemModel.find_all()],
                 "msg": "more data available if you log in"}, 200  # if not, return only names
-
