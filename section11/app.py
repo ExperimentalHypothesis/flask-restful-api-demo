@@ -23,6 +23,14 @@ app.config["JWT_SECRET_KEY"] = "asdlasdjoadosadjoifjd"
 api = Api(app)
 jwt = JWTManager(app) # not createing /auth endpoin
 
+
+@jwt.user_claims_loader
+def add_claims(identity):
+    if identity == 1:  # value hardcoded but it should be from config or elswhere
+        return {"is_admin": True}
+    return {"is_admin": False}
+    
+    
 # creating api endpoints
 api.add_resource(UserRegister, "/register")
 api.add_resource(Item, "/item/<string:name>") 

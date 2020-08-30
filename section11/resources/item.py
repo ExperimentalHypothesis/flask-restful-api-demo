@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_claims
 from models.item import ItemModel
 
 
@@ -38,9 +38,15 @@ class Item(Resource):
             return {"message" : "error when inserting item to database"}, 500 # internal server error
         return new_item.json(), 201
 
-    
+
+    @jwt_required
     def delete(self, name):
         """ endpoint for deleting an item by name """
+
+        # delete only if you are admin
+        claims = get_jwt_claims()
+        if not claims["is_admin"]:
+            return {"msg": "you must be admin"}
 
         item = ItemModel.find_item_by_name(name)
         if item:
