@@ -1,19 +1,23 @@
 
 import sqlite3
 
+from werkzeug.security import safe_str_cmp
+from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_restful import Resource, reqparse
 from models.user import UserModel
 
-class UserRegister(Resource):
-    """ Endpoint for registering user. Data will come in this format {"username": "Lukas", "password" : "p@55w0rd"} """
 
-    parser = reqparse.RequestParser()
-    parser.add_argument("username", required=True, type=str)
-    parser.add_argument("password", required=True, type=str)
+_user_parser = reqparse.RequestParser()
+_user_parser.add_argument("username", required=True, type=str)
+_user_parser.add_argument("password", required=True, type=str)
+ 
+
+class UserRegister(Resource):
+    """ Resource for registering user. Data will come in this format {"username": "Lukas", "password" : "p@55w0rd"} """   
     
-    def post(self):
+    def post(self): 
         
-        data = UserRegister.parser.parse_args()
+        data = _user_parser.parse_args()
       
         if UserModel.get_user_by_username(data["username"]): 
             return {"message" : "user already exists"}, 400
@@ -36,7 +40,7 @@ class User(Resource):
             return {"msg": "server error"}, 500
         
         if user:
-            return {"user_name": f"{user.username}", "user_password": f"{user.password}"}, 200
+            return user.json(), 200
         return {"msg": f"user with id {id} not found"}, 404
 
     @classmethod
@@ -53,3 +57,24 @@ class User(Resource):
         return {"msg": f"user with id {id} not found"}, 404
 
 
+class UserLogin(Resource):
+    """ Resource for loging a user. This is basically what JWT did before in section 10. """
+    
+    @classmethod
+    def post(cls):
+        """ Create tokens for particular user. """
+        
+        # get data from parser
+        data = _user_parser.parse_args()
+        # find user in database based on username
+        user = UserModel.get_user_by_username(data["username"])
+        # check password - this is what the authenticate() function did in section 10
+        if user and safe_str_cmp(user.password, data["password"]):
+        # generate the tokens - this is what the identity() function did in section 10
+            access_token = create_access_token(identity=user.id, fresh=True) # these two functions are part of JWTExtended
+            refresh_token = create_refresh_token(identity=user.id)
+            return {
+                "access_token": access_token,
+                "refresh_token": refresh_token
+            }, 200
+        return {"msg": "invalid credentials"}, 401

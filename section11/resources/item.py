@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from flask_jwt import jwt_required
+from flask_jwt_extended import jwt_required
 from models.item import ItemModel
 
 
@@ -10,7 +10,7 @@ class Item(Resource):
     parser.add_argument("price", type=float, required=True, help="price of the item")
     parser.add_argument("store_id", type=int, required=True, help="ID of store where the item belogs")
 
-    @jwt_required() # this cause that only logged in users can get the data
+    @jwt_required # no bracktes if i use JWT extended
     def get(self, name):
         """ endpoint for getting one item by name """
 
