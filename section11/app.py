@@ -4,7 +4,7 @@ from flask import Flask, jsonify
 from flask_restful import Api
 from flask_jwt_extended import JWTManager # will need Bearer in the header not JWT
 
-from resources.user import UserRegister, User, UserLogin, TokenRefresh
+from resources.user import UserRegister, User, UserLogin, UserLogout, TokenRefresh
 from resources.item import Item, Items
 from resources.store import Store, Stores
 
@@ -33,10 +33,10 @@ def add_claims(identity):
         return {"is_admin": True}
     return {"is_admin": False}
     
-    
+
 @jwt.token_in_blacklist_loader
 def token_blacklisted_callback(decrypted_token):
-    return decrypted_token["identity"] in BLACKLIST
+    return decrypted_token["jti"] in BLACKLIST
 
 
 # configurations for JWT
@@ -86,6 +86,7 @@ api.add_resource(Store, "/store/<string:name>")
 api.add_resource(Stores, "/stores")
 api.add_resource(User, "/user/<int:id>")
 api.add_resource(UserLogin, "/login")
+api.add_resource(UserLogout, "/logout")
 api.add_resource(TokenRefresh, "/refresh")
 
 
