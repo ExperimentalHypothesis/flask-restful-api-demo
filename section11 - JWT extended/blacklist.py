@@ -1,2 +1,0 @@
-BLACKLIST  = set()
-

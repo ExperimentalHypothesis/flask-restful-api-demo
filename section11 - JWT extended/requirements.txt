@@ -1,7 +1,0 @@
-Flask_SQLAlchemy==2.3.2
-Flask==1.1.2
-flask_jwt_extended
-flask_restful==0.3.8
-uwsgi
-psycopg2
-markdown
