@@ -1,6 +1,6 @@
 import os, markdown
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_restful import Api
 from flask_jwt_extended import JWTManager # will need Bearer in the header not JWT
 
@@ -28,6 +28,45 @@ def add_claims(identity):
         return {"is_admin": True}
     return {"is_admin": False}
     
+
+# configurations for JWT
+@jwt.expired_token_loader
+def expired_token_callback():
+    return jsonify({
+        "description": "Token has expored",
+        "error": "token expired"
+    }), 401
+
+
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    return jsonify({
+        "description": "Signature verification failed",  # insteda of "msg": "Invalid header string: 'utf-8' codec can't decode byte 0x9f in position 25: invalid start byte"
+        "error": "invalid token"
+    }), 401
+
+@jwt.unauthorized_loader
+def missing_token_callback(error):
+    return jsonify({
+        "description": "request does not contain an access token.",
+        "error": "token missing"
+    }), 401
+
+@jwt.needs_fresh_token_loader
+def token_not_fresh_callback():
+    return jsonify({
+        "description": "the token is not fresh",
+        "error": "fresh token required"
+    }), 401
+
+# it is sort of blacklisting ... adding to revoked token list will disable access
+@jwt.revoked_token_loader
+def token_revoked_callback():
+    return jsonify({
+        "description": "token has been revoked",
+        "error": "token revoked"
+    }), 401
+
 
 # creating api endpoints
 api.add_resource(UserRegister, "/register")
