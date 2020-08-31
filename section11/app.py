@@ -8,14 +8,19 @@ from resources.user import UserRegister, User, UserLogin, TokenRefresh
 from resources.item import Item, Items
 from resources.store import Store, Stores
 
+from blacklist import BLACKLIST
+
 app = Flask(__name__)
 app.secret_key = "sadaddaf"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL","sqlite:///data.db")
 app.config["PROPAGATE_EXCEPTIONS"] = True
-app.config["JWT_SECRET_KEY"] = "asdlasdjoadosadjoifjd"
 
-# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
+app.config["JWT_SECRET_KEY"] = "asdlasdjoadosadjoifjd"
+app.config["JWT_BLACKLIST_ENABLED"] = True
+app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access", "refresh"]  # no matter what thet send, they will not be allowed..
+
 
 # initializing app extension
 api = Api(app)
@@ -28,6 +33,11 @@ def add_claims(identity):
         return {"is_admin": True}
     return {"is_admin": False}
     
+    
+@jwt.token_in_blacklist_loader
+def token_blacklisted_callback(decrypted_token):
+    return decrypted_token["identity"] in BLACKLIST
+
 
 # configurations for JWT
 @jwt.expired_token_loader

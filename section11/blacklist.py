@@ -1,0 +1,1 @@
+BLACKLIST  = {2, 3} # these ids will be disabled
