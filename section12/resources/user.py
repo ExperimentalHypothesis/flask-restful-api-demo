@@ -13,23 +13,25 @@ from flask_restful import Resource, reqparse
 from blacklist import BLACKLIST
 from models.user import UserModel
 
+BLANK_ERROR = "{} cannot be blank"
 ALREADY_EXISTS_ERROR = "User '{}' already exists."
 SUCCESSFULLY_ADDED = "User '{}' added successfully."
 SUCCESSFULLY_DELETED = "User '{}' deleted successfully."
-SUCCESSFULLY_LOGOUT = "Successfully loged out."
+SUCCESSFULLY_LOGOUT = "Successfully loged out 'id={user_id}'."
 SERVER_ERROR = "Server error."
 NOT_FOUND_ERROR = "User '{}' not found."
 INVALID_CREDENTIALS_ERROR = "Invalid credentials."
 
 _user_parser = reqparse.RequestParser()
-_user_parser.add_argument("username", required=True, type=str)
-_user_parser.add_argument("password", required=True, type=str)
+_user_parser.add_argument("username", required=True, type=str, help=BLANK_ERROR.format("username"))
+_user_parser.add_argument("password", required=True, type=str, help=BLANK_ERROR.format("password"))
 
-
+ 
 class UserRegister(Resource):
     """ Resource for registering user. Data will come in this format {"username": "Lukas", "password" : "p@55w0rd"} """
 
-    def post(self):
+    @classmethod
+    def post(cls):
 
         data = _user_parser.parse_args()
 
@@ -96,11 +98,13 @@ class UserLogin(Resource):
 class UserLogout(Resource):
     """ This will blacklist specific token based on JTW id. """
 
+    @classmethod
     @jwt_required
-    def post(self):
+    def post(cls):
         jti = get_raw_jwt()["jti"]  # jti is "JWT ID", a unique identifier for a JWT.
+        user_id = get_jwt_identity()
         BLACKLIST.add(jti)
-        return {"message": SUCCESSFULLY_LOGOUT}, 200
+        return {"message": SUCCESSFULLY_LOGOUT.format(user_id=user_id)}, 200
 
 
 class TokenRefresh(Resource):
@@ -110,8 +114,9 @@ class TokenRefresh(Resource):
     time as opposed to situation when he just gave the username and password.
     """
 
+    @classmethod
     @jwt_refresh_token_required
-    def post(self):
+    def post(cls):
         current_user_id = get_jwt_identity()
         print(current_user_id)
 

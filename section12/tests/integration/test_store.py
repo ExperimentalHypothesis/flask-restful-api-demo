@@ -6,7 +6,7 @@ from app import app
 from db import db
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(autouse=True)
 def test_client_db():
 
     # set up
@@ -41,23 +41,23 @@ def test_json(test_client_db):
 
 
 def test_find_by_name(test_client_db):
-    item = ItemModel("testing", 19.99, 1)  # tady musi bejt jiny jmeno nez bylo driv.. nevim jak udelat poradnej teardown
+    item = ItemModel("test", 19.99, 1)  # tady musi bejt jiny jmeno nez bylo driv.. nevim jak udelat poradnej teardown
     item.save_to_db()
-    found = ItemModel.find_item_by_name("testing")
+    found = ItemModel.find_item_by_name("test")
     assert found.name == item.name
     assert found.price == item.price
     assert found.store_id == item.store_id
     assert found.id == item.id
 
 
-# # pada kvuli tomu ze neni teardown
-# def test_find_all(test_client_db):
-#     first = ItemModel("first", 1.09, 1)
-#     second = ItemModel("second", 2.09, 1)
-#     first.save_to_db()
-#     second.save_to_db()
-#     qry_res = ItemModel.find_all()
-#     assert len(qry_res) == 2
+# pada kvuli tomu ze neni teardown
+def test_find_all(test_client_db):
+    first = ItemModel("first", 1.09, 1)
+    second = ItemModel("second", 2.09, 1)
+    first.save_to_db()
+    second.save_to_db()
+    qry_res = ItemModel.find_all()
+    assert len(qry_res) == 2
 
 
 def test_save_delete(test_client_db):

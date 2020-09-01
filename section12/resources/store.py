@@ -14,7 +14,8 @@ class Store(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument("name", type=str, required=True, help=BLANK_ERROR.format("name"))
 
-    def get(self, name: str):
+    @classmethod
+    def get(cls, name: str):
         """ endpoint for getting one store """
 
         # try to find the store
@@ -27,7 +28,8 @@ class Store(Resource):
         else:
             return {"message": NOT_FOUND_ERROR.format(name)}, 404
 
-    def post(self, name: str):
+    @classmethod
+    def post(cls, name: str):
         """ endpoint for creating new store """
 
         # parse the data sent
@@ -46,7 +48,8 @@ class Store(Resource):
             return {"message": SERVER_ERROR}, 500
         return new_store.json(), 201
 
-    def delete(self, name: str):
+    @classmethod
+    def delete(cls, name: str):
         """ endpoint for deleting item from db """
 
         # try to find it
@@ -62,7 +65,8 @@ class Store(Resource):
 
         return {"message": SUCCESSFULLY_DELETED.format(name)}
 
-    def put(self, name: str):
+    @classmethod
+    def put(cls, name: str):
         """ endoint for upserting item """
 
         # parse the data sent
@@ -91,7 +95,8 @@ class Store(Resource):
 class Stores(Resource):
     """ Resource for all stores """
 
-    def get(self):
+    @classmethod
+    def get(cls):
         """ endpoint for getting all stores - return ID and name """
 
         # find_all() encapsulates the query object, resource should not interact with database at all

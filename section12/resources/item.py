@@ -15,7 +15,8 @@ class Item(Resource):
     parser.add_argument("price", type=float, required=True, help=BLANK_ERROR.format("price"))
     parser.add_argument("store_id", type=int, required=True, help=BLANK_ERROR.format("store_id"))
 
-    def get(self, name: str):
+    @classmethod
+    def get(cls, name: str):
         """ endpoint for getting one item by name """
         try:
             found_item = ItemModel.find_item_by_name(name)
@@ -28,8 +29,9 @@ class Item(Resource):
             )
         return {"message": NOT_FOUND_ERROR.format(name)}, 404
 
+    @classmethod
     @fresh_jwt_required  # this will accept only newly generated fresh token - the one you get after loging in
-    def post(self, name: str):
+    def post(cls, name: str):
         """ endponint for creating an item, it does not accept full json, but parses it and uses only {price: <float>} """
         if ItemModel.find_item_by_name(name):
             return {
@@ -47,15 +49,17 @@ class Item(Resource):
             }, 500  # internal server error
         return new_item.json(), 201
 
+    @classmethod
     @jwt_required
-    def delete(self, name: str):
+    def delete(cls, name: str):
         """ endpoint for deleting an item by name """
         item = ItemModel.find_item_by_name(name)
         if item:
             item.delete_from_db()
         return {"message": ITEM_DELETED.format(name)}
 
-    def put(self, name: str):
+    @classmethod
+    def put(cls, name: str):
         """ endpoint for updating/creating an item by name """
         data = Item.parser.parse_args()
         item = ItemModel.find_item_by_name(name)
@@ -72,6 +76,7 @@ class Item(Resource):
 class Items(Resource):
     """ Resource for all the items. """
 
-    def get(self):
+    @classmethod
+    def get(cls):
         """ endpoint for getting all the items """
         return {"items": [item.json() for item in ItemModel.find_all()]}
