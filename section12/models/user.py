@@ -4,6 +4,7 @@ from db import db
 
 UserJSON = Dict[str, Union[int, str]]
 
+
 class UserModel(db.Model):
     """ Data model for creating a user """
 
