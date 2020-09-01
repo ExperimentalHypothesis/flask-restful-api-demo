@@ -1,5 +1,4 @@
-import sqlite3
-
+from flask import request
 from werkzeug.security import safe_str_cmp
 from flask_jwt_extended import (
     create_access_token,
@@ -12,8 +11,9 @@ from flask_jwt_extended import (
 from flask_restful import Resource, reqparse
 from blacklist import BLACKLIST
 from models.user import UserModel
+from schemas.user import UserSchema
+from marshmallow import ValidationError
 
-BLANK_ERROR = "{} cannot be blank"
 ALREADY_EXISTS_ERROR = "User '{}' already exists."
 SUCCESSFULLY_ADDED = "User '{}' added successfully."
 SUCCESSFULLY_DELETED = "User '{}' deleted successfully."
@@ -22,26 +22,25 @@ SERVER_ERROR = "Server error."
 NOT_FOUND_ERROR = "User '{}' not found."
 INVALID_CREDENTIALS_ERROR = "Invalid credentials."
 
-_user_parser = reqparse.RequestParser()
-_user_parser.add_argument("username", required=True, type=str, help=BLANK_ERROR.format("username"))
-_user_parser.add_argument("password", required=True, type=str, help=BLANK_ERROR.format("password"))
+user_schema = UserSchema()
 
- 
+
 class UserRegister(Resource):
     """ Resource for registering user. Data will come in this format {"username": "Lukas", "password" : "p@55w0rd"} """
 
     @classmethod
     def post(cls):
+        try:
+            user_data = user_schema.load(request.get_json())  # flaskovej request, kterej prijima hromadu veci, i json
+        except ValidationError as ex:
+            return ex.messages, 404
+        if UserModel.get_user_by_username(user_data["username"]):
+            return {"message": ALREADY_EXISTS_ERROR.format(user_data["username"])}, 400
 
-        data = _user_parser.parse_args()
-
-        if UserModel.get_user_by_username(data["username"]):
-            return {"message": ALREADY_EXISTS_ERROR.format(data["username"])}, 400
-
-        user = UserModel(**data)
+        user = UserModel(**user_data)
         user.save_to_db()
 
-        return {"message": SUCCESSFULLY_ADDED.format(data["username"])}, 201
+        return {"message": SUCCESSFULLY_ADDED.format(user_data["username"])}, 201
 
 
 class User(Resource):
@@ -56,7 +55,7 @@ class User(Resource):
             return {"msg": SERVER_ERROR}, 500
 
         if user:
-            return user.json(), 200
+            return user_schema.dump(user), 200
         return {"msg": NOT_FOUND_ERROR.format(id)}, 404
 
     @classmethod
@@ -80,12 +79,15 @@ class UserLogin(Resource):
     def post(cls):
         """ Create tokens for particular user. """
 
-        # get data from parser
-        data = _user_parser.parse_args()
+        # get data
+        try:
+            user_data = user_schema.load(request.get_json())
+        except ValidationError as ex:
+            return ex.messages, 404
         # find user in database based on username
-        user = UserModel.get_user_by_username(data["username"])
+        user = UserModel.get_user_by_username(user_data["username"])
         # check password - this is what the authenticate() function did in section 10
-        if user and safe_str_cmp(user.password, data["password"]):
+        if user and safe_str_cmp(user.password, user_data["password"]):
             # generate the tokens - this is what the identity() function did in section 10
             access_token = create_access_token(
                 identity=user.id, fresh=True

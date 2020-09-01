@@ -27,9 +27,6 @@ class UserModel(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def json(self) -> UserJSON:
-        return {"id": self.id, "username": self.username}
-
     @classmethod
     def get_user_by_id(cls, id: int) -> "UserModel":
         """ get user by id """
