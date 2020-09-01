@@ -32,12 +32,12 @@ class ItemModel(db.Model):
                  "store_id": self.store_id} 
 
     @classmethod
-    def find_item_by_name(cls, name: str):
+    def find_item_by_name(cls, name: str) -> "ItemModel":
         """ helper method used for finding item by name, used in two methods - GET and POST"""
         return cls.query.filter_by(name=name).first() # SELECT * FROM items WHERE name=name LIMIT 1
  
     @classmethod
-    def find_all(cls) -> List:
+    def find_all(cls) -> List["ItemModel"]:
         """ helper method used for getting all items. """
         return cls.query.all()
     

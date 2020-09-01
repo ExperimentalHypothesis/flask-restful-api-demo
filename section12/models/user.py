@@ -30,11 +30,11 @@ class UserModel(db.Model):
         return {"id": self.id, "username": self.username}
 
     @classmethod
-    def get_user_by_id(cls, id: int):
+    def get_user_by_id(cls, id: int) -> "UserModel":
         """ get user by id """
         return UserModel.query.filter_by(id=id).first()
 
     @classmethod
-    def get_user_by_username(cls, username):
+    def get_user_by_username(cls, username) -> "UserModel":
         """ get user by username """
         return UserModel.query.filter_by(username=username).first()

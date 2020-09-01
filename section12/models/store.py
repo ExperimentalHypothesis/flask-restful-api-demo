@@ -27,12 +27,12 @@ class StoreModel(db.Model):
                 "items": [item.json() for item in self.items.all()]} # kdyz mam lazy tak tady musim data all.. list se vytvori az na zavolani.. 
     
     @classmethod
-    def find_by_name(cls, name: str):
+    def find_by_name(cls, name: str) -> "StoreModel":
         """ helper method used for finding item by name, used in two methods - GET and POST"""
         return cls.query.filter_by(name=name).first() # SELECT * FROM items WHERE name=name LIMIT 1
 
     @classmethod
-    def find_all(cls) -> List:
+    def find_all(cls) -> List["StoreModel"]:
         """ helper method used for getting all stores. """
         return cls.query.all()
 
