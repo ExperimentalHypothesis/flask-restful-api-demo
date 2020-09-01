@@ -2,12 +2,17 @@ from flask_restful import Resource, reqparse
 
 from models.store import StoreModel
 
+BLANK_ERROR = "Field for '{}' cannot be blank."
+SERVER_ERROR = "Server error."
+NOT_FOUND_ERROR = "Store '{}' not found."
+ALREADY_EXISTS_ERROR = "Store '{}' already exists."
+SUCCESSFULLY_DELETED = "Store '{}' successfully deleted."
 
 class Store(Resource):
     """ Resource for particular store """
 
     parser = reqparse.RequestParser()
-    parser.add_argument("name", type=str, required=True, help="name of the store")
+    parser.add_argument("name", type=str, required=True, help=BLANK_ERROR.format("name"))
 
     def get(self, name: str):
         """ endpoint for getting one store """
@@ -16,13 +21,11 @@ class Store(Resource):
         try:
             store = StoreModel.find_by_name(name)
         except Exception as e:
-            return {"message": "error occured when finding store"}, 500
-        # if found, return it
+            return {"message": SERVER_ERROR}, 500
         if store:
             return store.json(), 200
-        # i not found, return 404
         else:
-            return {"message": "store not found"}, 404
+            return {"message": NOT_FOUND_ERROR.format(name)}, 404
 
     def post(self, name: str):
         """ endpoint for creating new store """
@@ -33,16 +36,14 @@ class Store(Resource):
         # check if the store exists already
         store = StoreModel.find_by_name(name)
         if store:
-            return {"message": "store with name already exists"}, 400
+            return {"message": ALREADY_EXISTS_ERROR.format(name)}, 400
 
         # if not create new one
         new_store = StoreModel(name)
-        # save to db
         try:
             new_store.save_to_db()
         except Exception as e:
-            return {"message": "error when adding to db"}, 500
-        # return result
+            return {"message": SERVER_ERROR}, 500
         return new_store.json(), 201
 
     def delete(self, name: str):
@@ -52,14 +53,14 @@ class Store(Resource):
         try:
             store = StoreModel.find_by_name(name)
         except Exception as e:
-            return {"message": "error  when finding the store"}
+            return {"message": SERVER_ERROR}
         # if found, delete it
         if store:
             store.delete_from_db(), 200
         else:
-            return {"message": "store not found"}, 404
+            return {"message": NOT_FOUND_ERROR.format(name)}, 404
 
-        return {"message": "item deleted"}
+        return {"message": SUCCESSFULLY_DELETED.format(name)}
 
     def put(self, name: str):
         """ endoint for upserting item """
@@ -71,7 +72,7 @@ class Store(Resource):
         try:
             store = StoreModel.find_by_name(name)
         except Exception as e:
-            return {"message": "error {e} when finding the store"}, 500
+            return {"message": SERVER_ERROR}, 500
         # if found, update
         if store:
             store.name = data["name"]
@@ -82,7 +83,7 @@ class Store(Resource):
         try:
             store.save_to_db()
         except Exception as e:
-            return {"message": "error {e} when saving to db"}, 500
+            return {"message": SERVER_ERROR}, 500
         # return result
         return store.json(), 200
 
