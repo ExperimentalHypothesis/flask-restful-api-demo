@@ -5,6 +5,7 @@ import pytest
 from app import app
 from db import db
 
+
 @pytest.fixture(autouse=True)
 def test_client_db():
 

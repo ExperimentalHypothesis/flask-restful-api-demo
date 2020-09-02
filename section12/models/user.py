@@ -1,5 +1,4 @@
 from typing import Dict, Union
-import sqlite3
 from db import db
 
 UserJSON = Dict[str, Union[int, str]]
