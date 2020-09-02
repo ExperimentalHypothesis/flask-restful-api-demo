@@ -24,14 +24,14 @@ class ItemModel(db.Model):
     def __repr__(self):
         return f"<ItemModel {self.name}, {self.price}>"
 
-    # def json(self) -> ItemJSON:
-    #     """ make JSON from the data, because only JSON can be returned from API """
-    #     return {
-    #         "id": self.id,
-    #         "name": self.name,
-    #         "price": self.price,
-    #         "store_id": self.store_id,
-    #     }
+    def json(self) -> ItemJSON:
+        """ make JSON from the data, because only JSON can be returned from API """
+        return {
+            "id": self.id,
+            "name": self.name,
+            "price": self.price,
+            "store_id": self.store_id,
+        }
 
     @classmethod
     def find_item_by_name(cls, name: str) -> "ItemModel":
