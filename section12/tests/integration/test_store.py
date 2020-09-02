@@ -64,3 +64,14 @@ def test_json(test_client_db):
             ],
         }
     assert expected == store1.json()
+
+
+def test_find_by_name(test_client_db):
+    store = StoreModel("first")
+    store.save_to_db()
+
+    found = store.find_by_name("first")
+    assert found.name == "first"
+    assert found.id == 1
+    assert list(found.items) == []
+
