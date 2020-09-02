@@ -8,8 +8,9 @@ NOT_FOUND_ERROR = "Item '{}' not found."
 ALREADY_EXISTS_ERROR = "Item '{}' already exists."
 ITEM_DELETED = "Item '{}' deleted successfully."
 
+
 class Item(Resource):
-    """ Resource for one particulart item. """
+    """ Resource for one particular item. """
 
     parser = reqparse.RequestParser()
     parser.add_argument("price", type=float, required=True, help=BLANK_ERROR.format("price"))
@@ -21,7 +22,7 @@ class Item(Resource):
         try:
             found_item = ItemModel.find_item_by_name(name)
         except:
-            {"message": SERVER_ERROR}, 500
+            return {"message": SERVER_ERROR}, 500
         if found_item:
             return (
                 found_item.json(),
@@ -30,9 +31,9 @@ class Item(Resource):
         return {"message": NOT_FOUND_ERROR.format(name)}, 404
 
     @classmethod
-    @fresh_jwt_required  # this will accept only newly generated fresh token - the one you get after loging in
+    # @fresh_jwt_required  # this will accept only newly generated fresh token - the one you get after loging in
     def post(cls, name: str):
-        """ endponint for creating an item, it does not accept full json, but parses it and uses only {price: <float>} """
+        """ endpoint for creating an item, it does not accept full json, but parses it and uses only {price: <float>} """
         if ItemModel.find_item_by_name(name):
             return {
                 "message": ALREADY_EXISTS_ERROR.format(name)
@@ -50,13 +51,17 @@ class Item(Resource):
         return new_item.json(), 201
 
     @classmethod
-    @jwt_required
+    # @jwt_required
     def delete(cls, name: str):
         """ endpoint for deleting an item by name """
-        item = ItemModel.find_item_by_name(name)
+        try:
+            item = ItemModel.find_item_by_name(name)
+        except:
+            return {"message": SERVER_ERROR}, 500
         if item:
             item.delete_from_db()
-        return {"message": ITEM_DELETED.format(name)}
+            return {"message": ITEM_DELETED.format(name)}, 200
+        return {"message": NOT_FOUND_ERROR.format(name)}, 404
 
     @classmethod
     def put(cls, name: str):
@@ -67,10 +72,11 @@ class Item(Resource):
         if item:  # updaing, if it exists
             item.price = data["price"]
             item.store_id = data["store_id"]
+            return item.json(), 200
         else:  # creating new, if it doesnt
             item = ItemModel(name, **data)  # data["price"], data["store_id"]
-        item.save_to_db()
-        return item.json()
+            item.save_to_db()
+            return item.json(), 201
 
 
 class Items(Resource):
