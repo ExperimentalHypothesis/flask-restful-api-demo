@@ -31,16 +31,16 @@ class UserRegister(Resource):
     @classmethod
     def post(cls):
         try:
-            user_data = user_schema.load(request.get_json())  # flaskovej request, kterej prijima hromadu veci, i json
+            user_model = user_schema.load(request.get_json())  # kdyz mam flask-marshmallow tak je z toho hnem objek user model, protozte to je spojeny s databazi
         except ValidationError as ex:
             return ex.messages, 404
-        if UserModel.get_user_by_username(user_data["username"]):
-            return {"message": ALREADY_EXISTS_ERROR.format(user_data["username"])}, 400
+        if UserModel.get_user_by_username(user_model["username"]):
+            return {"message": ALREADY_EXISTS_ERROR.format(user_model["username"])}, 400
 
-        user = UserModel(**user_data)
-        user.save_to_db()
+        user_model = UserModel(**user_model)
+        user_model.save_to_db()
 
-        return {"message": SUCCESSFULLY_ADDED.format(user_data["username"])}, 201
+        return {"message": SUCCESSFULLY_ADDED.format(user_model.username)}, 201
 
 
 class User(Resource):
@@ -55,7 +55,7 @@ class User(Resource):
             return {"msg": SERVER_ERROR}, 500
 
         if user:
-            return user_schema.dump(user), 200
+            return user_schema.dump(user), 200  # the has not changed with flask-marshmallow
         return {"msg": NOT_FOUND_ERROR.format(id)}, 404
 
     @classmethod
@@ -73,25 +73,21 @@ class User(Resource):
 
 
 class UserLogin(Resource):
-    """ Resource for loging a user. This is basically what JWT did before in section 10. """
+    """ Resource for logging a user. This is basically what JWT did before in section 10. """
 
     @classmethod
     def post(cls):
         """ Create tokens for particular user. """
-
-        # get data
+         # get data
         try:
-            user_data = user_schema.load(request.get_json())
+            # this is user model object but not yet in database
+            user_model = user_schema.load(request.get_json())
         except ValidationError as ex:
             return ex.messages, 404
-        # find user in database based on username
-        user = UserModel.get_user_by_username(user_data["username"])
-        # check password - this is what the authenticate() function did in section 10
-        if user and safe_str_cmp(user.password, user_data["password"]):
-            # generate the tokens - this is what the identity() function did in section 10
-            access_token = create_access_token(
-                identity=user.id, fresh=True
-            )  # these two functions are part of JWTExtended
+        # this is user model object also, but retrieved from db => for comparison..
+        user = UserModel.get_user_by_username(user_model["username"])
+        if user and safe_str_cmp(user.password, user_model["password"]):
+            access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(identity=user.id)
             return {"access_token": access_token, "refresh_token": refresh_token}, 200
         return {"msg": INVALID_CREDENTIALS_ERROR}, 401

@@ -10,7 +10,7 @@ def test_item_init():
 
 def test_repr():
     item = ItemModel("test", 19.99, 1)
-    expected = "<Itemmodel test, 19.99>"
+    expected = "<ItemModel test, 19.99>"
     assert expected == item.__repr__()
 
 

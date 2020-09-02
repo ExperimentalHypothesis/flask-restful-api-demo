@@ -1,5 +1,4 @@
 from models.item import ItemModel
-
 import pytest
 from app import app
 from db import db

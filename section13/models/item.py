@@ -22,7 +22,7 @@ class ItemModel(db.Model):
         self.store_id = store_id
 
     def __repr__(self):
-        return f"<Itemmodel {self.name}, {self.price}>"
+        return f"<ItemModel {self.name}, {self.price}>"
 
     def json(self) -> ItemJSON:
         """ make JSON from the data, because only JSON can be returned from API """
