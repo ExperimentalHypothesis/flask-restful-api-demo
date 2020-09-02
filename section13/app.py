@@ -61,6 +61,7 @@ def index():
 def create_tables():
     db.create_all()
 
+
 # when developing..
 if __name__ == "__main__":
 

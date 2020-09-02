@@ -31,7 +31,10 @@ class UserRegister(Resource):
     @classmethod
     def post(cls):
         try:
-            user_model = user_schema.load(request.get_json())  # kdyz mam flask-marshmallow tak je z toho hnem objek user model, protozte to je spojeny s databazi
+            # tady by se to melo nejak loadnout aby se z toho hned udelal objekt user_model, ale nefunguje to nechava dict
+            # co ale dela je ze checkuje argumenty, jestli sedej s modelem..
+            user_model = user_schema.load(request.get_json())
+            print(user_model, type(user_model))
         except ValidationError as ex:
             return ex.messages, 404
         if UserModel.get_user_by_username(user_model["username"]):
