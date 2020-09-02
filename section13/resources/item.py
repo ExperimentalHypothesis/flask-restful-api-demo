@@ -1,6 +1,8 @@
 from flask import request
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, fresh_jwt_required
+from marshmallow import ValidationError
+
 from models.item import ItemModel
 from schemas.item import ItemSchema
 
@@ -25,24 +27,23 @@ class Item(Resource):
             return {"message": SERVER_ERROR}, 500
 
         if found_item:
-            return (
-                item_schema.dump(found_item),  # marshmallow dump..
-                200,
-            )
+            return item_schema.dump(found_item), 200
         return {"message": NOT_FOUND_ERROR.format(name)}, 404
 
     @classmethod
     # @fresh_jwt_required  # this will accept only newly generated fresh token - the one you get after loging in
     def post(cls, name: str):
-        """ endpoint for creating an item, it does not accept full json, but parses it and uses only {price: <float>} """
+        """ endpoint for creating an item, it does not ac  cept full json, but parses it and uses only {price: <float>} """
 
-        received_json = request.get_json()
+        try:
+            received_json = item_schema.load(request.get_json())
+        except ValidationError as ex:
+            return ex.messages, 400
         received_json["name"] = name  # adding name from path to json that will be loaded
 
         if ItemModel.find_item_by_name(name):
             return {"message": ALREADY_EXISTS_ERROR.format(name)}, 400
 
-        # data = item_schema.load(received_json)
         new_item = ItemModel(**received_json)
 
         try:
@@ -63,7 +64,11 @@ class Item(Resource):
     @classmethod
     def put(cls, name: str):
         """ endpoint for updating/creating an item by name """
-        received_json = request.get_json()
+        try:
+            received_json = item_schema.load(request.get_json())
+        except ValidationError as ex:
+            return ex.messages, 404
+
         received_json["name"] = name
 
         item = ItemModel.find_item_by_name(name)

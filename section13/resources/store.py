@@ -49,7 +49,6 @@ class Store(Resource):
     def delete(cls, name: str):
         """ endpoint for deleting item from db """
 
-        # try to find it
         try:
             store = StoreModel.find_by_name(name)
         except Exception as e:
