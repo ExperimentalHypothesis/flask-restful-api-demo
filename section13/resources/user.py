@@ -30,13 +30,10 @@ class UserRegister(Resource):
 
     @classmethod
     def post(cls):
-        try:
-            # tady by se to melo nejak loadnout aby se z toho hned udelal objekt user_model, ale nefunguje to nechava dict
-            # co ale dela je ze checkuje argumenty, jestli sedej s modelem..
-            user_model = user_schema.load(request.get_json())
-            print(user_model, type(user_model))
-        except ValidationError as ex:
-            return ex.messages, 404
+        # tady by se to melo nejak loadnout aby se z toho hned udelal objekt user_model, ale nefunguje to nechava dict
+        # co ale dela je ze checkuje argumenty, jestli sedej s modelem..
+        user_model = user_schema.load(request.get_json())
+        print(user_model, type(user_model))
         if UserModel.get_user_by_username(user_model["username"]):
             return {"message": ALREADY_EXISTS_ERROR.format(user_model["username"])}, 400
 
@@ -81,13 +78,7 @@ class UserLogin(Resource):
     @classmethod
     def post(cls):
         """ Create tokens for particular user. """
-         # get data
-        try:
-            # this is user model object but not yet in database
-            user_model = user_schema.load(request.get_json())
-        except ValidationError as ex:
-            return ex.messages, 404
-        # this is user model object also, but retrieved from db => for comparison..
+        user_model = user_schema.load(request.get_json())
         user = UserModel.get_user_by_username(user_model["username"])
         if user and safe_str_cmp(user.password, user_model["password"]):
             access_token = create_access_token(identity=user.id, fresh=True)

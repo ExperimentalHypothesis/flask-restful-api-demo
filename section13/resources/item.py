@@ -35,15 +35,11 @@ class Item(Resource):
     def post(cls, name: str):
         """ endpoint for creating an item, it does not ac  cept full json, but parses it and uses only {price: <float>} """
 
-        try:
-            received_json = item_schema.load(request.get_json())
-        except ValidationError as ex:
-            return ex.messages, 400
+        received_json = item_schema.load(request.get_json())
         received_json["name"] = name  # adding name from path to json that will be loaded
 
         if ItemModel.find_item_by_name(name):
             return {"message": ALREADY_EXISTS_ERROR.format(name)}, 400
-
         new_item = ItemModel(**received_json)
 
         try:
@@ -64,11 +60,7 @@ class Item(Resource):
     @classmethod
     def put(cls, name: str):
         """ endpoint for updating/creating an item by name """
-        try:
-            received_json = item_schema.load(request.get_json())
-        except ValidationError as ex:
-            return ex.messages, 404
-
+        received_json = item_schema.load(request.get_json())
         received_json["name"] = name
 
         item = ItemModel.find_item_by_name(name)
