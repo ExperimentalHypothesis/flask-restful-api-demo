@@ -16,22 +16,22 @@ class ItemModel(db.Model):
     store_id = db.Column(db.Integer, db.ForeignKey("stores.id"))
     store = db.relationship("StoreModel")
 
-    def __init__(self, name: str, price: float, store_id: int):
-        self.name = name
-        self.price = price
-        self.store_id = store_id
+    # def __init__(self, name: str, price: float, store_id: int):
+    #     self.name = name
+    #     self.price = price
+    #     self.store_id = store_id
 
     def __repr__(self):
         return f"<ItemModel {self.name}, {self.price}>"
 
-    def json(self) -> ItemJSON:
-        """ make JSON from the data, because only JSON can be returned from API """
-        return {
-            "id": self.id,
-            "name": self.name,
-            "price": self.price,
-            "store_id": self.store_id,
-        }
+    # def json(self) -> ItemJSON:
+    #     """ make JSON from the data, because only JSON can be returned from API """
+    #     return {
+    #         "id": self.id,
+    #         "name": self.name,
+    #         "price": self.price,
+    #         "store_id": self.store_id,
+    #     }
 
     @classmethod
     def find_item_by_name(cls, name: str) -> "ItemModel":
