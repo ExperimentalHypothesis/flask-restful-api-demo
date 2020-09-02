@@ -1,19 +1,22 @@
+from flask import request
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, fresh_jwt_required
-from models.item import ItemModel
+from marshmallow import ValidationError
 
-BLANK_ERROR = "Field for '{}' cannot be blank."
+from models.item import ItemModel
+from schemas.item import ItemSchema
+
 SERVER_ERROR = "Server error."
 NOT_FOUND_ERROR = "Item '{}' not found."
 ALREADY_EXISTS_ERROR = "Item '{}' already exists."
 ITEM_DELETED = "Item '{}' deleted successfully."
 
-class Item(Resource):
-    """ Resource for one particulart item. """
+item_schema = ItemSchema()
+item_list_schema = ItemSchema(many=True)
 
-    parser = reqparse.RequestParser()
-    parser.add_argument("price", type=float, required=True, help=BLANK_ERROR.format("price"))
-    parser.add_argument("store_id", type=int, required=True, help=BLANK_ERROR.format("store_id"))
+
+class Item(Resource):
+    """ Resource for one particular item. """
 
     @classmethod
     def get(cls, name: str):
@@ -21,36 +24,32 @@ class Item(Resource):
         try:
             found_item = ItemModel.find_item_by_name(name)
         except:
-            {"message": SERVER_ERROR}, 500
+            return {"message": SERVER_ERROR}, 500
+
         if found_item:
-            return (
-                found_item.json(),
-                200,
-            )
+            return item_schema.dump(found_item), 200
         return {"message": NOT_FOUND_ERROR.format(name)}, 404
 
     @classmethod
-    @fresh_jwt_required  # this will accept only newly generated fresh token - the one you get after loging in
+    # @fresh_jwt_required  # this will accept only newly generated fresh token - the one you get after loging in
     def post(cls, name: str):
-        """ endponint for creating an item, it does not accept full json, but parses it and uses only {price: <float>} """
-        if ItemModel.find_item_by_name(name):
-            return {
-                "message": ALREADY_EXISTS_ERROR.format(name)
-            }, 400  # bad request - fault of client
+        """ endpoint for creating an item, it does not ac  cept full json, but parses it and uses only {price: <float>} """
 
-        data = Item.parser.parse_args()
-        new_item = ItemModel(name, **data)  # data["price"], data["store_id"]
+        received_json = item_schema.load(request.get_json())
+        received_json["name"] = name  # adding name from path to json that will be loaded
+
+        if ItemModel.find_item_by_name(name):
+            return {"message": ALREADY_EXISTS_ERROR.format(name)}, 400
+        new_item = ItemModel(**received_json)
 
         try:
             new_item.save_to_db()
         except:
-            return {
-                "message": SERVER_ERROR
-            }, 500  # internal server error
-        return new_item.json(), 201
+            return {"message": SERVER_ERROR}, 500
+        return item_schema.dump(new_item), 201
 
     @classmethod
-    @jwt_required
+    # @jwt_required
     def delete(cls, name: str):
         """ endpoint for deleting an item by name """
         item = ItemModel.find_item_by_name(name)
@@ -61,16 +60,18 @@ class Item(Resource):
     @classmethod
     def put(cls, name: str):
         """ endpoint for updating/creating an item by name """
-        data = Item.parser.parse_args()
+        received_json = item_schema.load(request.get_json())
+        received_json["name"] = name
+
         item = ItemModel.find_item_by_name(name)
 
-        if item:  # updaing, if it exists
-            item.price = data["price"]
-            item.store_id = data["store_id"]
+        if item:  # updating, if it exists
+            item.price = received_json["price"]
+            item.store_id = received_json["store_id"]
         else:  # creating new, if it doesnt
-            item = ItemModel(name, **data)  # data["price"], data["store_id"]
+            item = ItemModel(**received_json)
         item.save_to_db()
-        return item.json()
+        return item_schema.dump(item)
 
 
 class Items(Resource):
@@ -79,4 +80,4 @@ class Items(Resource):
     @classmethod
     def get(cls):
         """ endpoint for getting all the items """
-        return {"items": [item.json() for item in ItemModel.find_all()]}
+        return {"items": item_list_schema.dump(ItemModel.find_all())}

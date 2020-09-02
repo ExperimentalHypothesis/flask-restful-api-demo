@@ -28,39 +28,40 @@ def test_client_db():
     ctx.pop()
 
 
-def test_json(test_client_db):
-    store = StoreModel("test")
-    store.save_to_db()
-    expected = {
-            "id": 1,
-            "name": "test",
-            "items": [],
-        }
-    assert expected == store.json()
 
-    # nonempty
-    store1 = StoreModel("testing")
-    store1.save_to_db()
-    item1 = ItemModel("one", 10, 2)
-    item2 = ItemModel("two", 10, 2)
-    item1.save_to_db()
-    item2.save_to_db()
-    expected = {
-            "id": 2,
-            "name": "testing",
-            "items": [
-                {
-                    "id": 1,
-                    "name": "one",
-                    "price": 10,
-                    "store_id": 2,
-                },
-                {
-                    "id": 2,
-                    "name": "two",
-                    "price": 10,
-                    "store_id": 2,
-                },
-            ],
-        }
-    assert expected == store1.json()
+# def test_json(test_client_db):
+#     store = StoreModel("test")
+#     store.save_to_db()
+#     expected = {
+#             "id": 1,
+#             "name": "test",
+#             "items": [],
+#         }
+#     assert expected == store.json()
+#
+#     # nonempty
+#     store1 = StoreModel("testing")
+#     store1.save_to_db()
+#     item1 = ItemModel("one", 10, 2)
+#     item2 = ItemModel("two", 10, 2)
+#     item1.save_to_db()
+#     item2.save_to_db()
+#     expected = {
+#             "id": 2,
+#             "name": "testing",
+#             "items": [
+#                 {
+#                     "id": 1,
+#                     "name": "one",
+#                     "price": 10,
+#                     "store_id": 2,
+#                 },
+#                 {
+#                     "id": 2,
+#                     "name": "two",
+#                     "price": 10,
+#                     "store_id": 2,
+#                 },
+#             ],
+#         }
+#     assert expected == store1.json()
