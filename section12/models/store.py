@@ -21,7 +21,7 @@ class StoreModel(db.Model):
         self.name = name
 
     def __repr__(self) -> Dict:
-        return f"<StoreModel {self.id}, {self.name}>"
+        return f"<StoreModel {self.name}>"
 
     def json(self) -> StoreJSON:
         """ make JSON frm the data, because only JSON can be returned from API """
