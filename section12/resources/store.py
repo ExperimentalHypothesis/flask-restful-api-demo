@@ -8,6 +8,7 @@ NOT_FOUND_ERROR = "Store '{}' not found."
 ALREADY_EXISTS_ERROR = "Store '{}' already exists."
 SUCCESSFULLY_DELETED = "Store '{}' successfully deleted."
 
+
 class Store(Resource):
     """ Resource for particular store """
 
@@ -32,10 +33,6 @@ class Store(Resource):
     def post(cls, name: str):
         """ endpoint for creating new store """
 
-        # parse the data sent
-        # data = self.parser.parse_args() # {"name" : "WallMart"}
-
-        # check if the store exists already
         store = StoreModel.find_by_name(name)
         if store:
             return {"message": ALREADY_EXISTS_ERROR.format(name)}, 400
@@ -56,7 +53,7 @@ class Store(Resource):
         try:
             store = StoreModel.find_by_name(name)
         except Exception as e:
-            return {"message": SERVER_ERROR}
+            return {"message": SERVER_ERROR}, 500
         # if found, delete it
         if store:
             store.delete_from_db(), 200
@@ -65,31 +62,31 @@ class Store(Resource):
 
         return {"message": SUCCESSFULLY_DELETED.format(name)}
 
-    @classmethod
-    def put(cls, name: str):
-        """ endoint for upserting item """
-
-        # parse the data sent
-        data = self.parser.parse_args()  # {"name" : "Walmare"}
-
-        # try to find the store
-        try:
-            store = StoreModel.find_by_name(name)
-        except Exception as e:
-            return {"message": SERVER_ERROR}, 500
-        # if found, update
-        if store:
-            store.name = data["name"]
-        # if not found, create
-        else:
-            store = StoreModel(name)
-        # save to db
-        try:
-            store.save_to_db()
-        except Exception as e:
-            return {"message": SERVER_ERROR}, 500
-        # return result
-        return store.json(), 200
+    # @classmethod
+    # def put(cls, name: str):
+    #     """ endoint for upserting item """
+    #
+    #     # parse the data sent
+    #     data = self.parser.parse_args()  # {"name" : "Walmare"}
+    #
+    #     # try to find the store
+    #     try:
+    #         store = StoreModel.find_by_name(name)
+    #     except Exception as e:
+    #         return {"message": SERVER_ERROR}, 500
+    #     # if found, update
+    #     if store:
+    #         store.name = data["name"]
+    #     # if not found, create
+    #     else:
+    #         store = StoreModel(name)
+    #     # save to db
+    #     try:
+    #         store.save_to_db()
+    #     except Exception as e:
+    #         return {"message": SERVER_ERROR}, 500
+    #     # return result
+    #     return store.json(), 200
 
 
 class Stores(Resource):
@@ -98,6 +95,4 @@ class Stores(Resource):
     @classmethod
     def get(cls):
         """ endpoint for getting all stores - return ID and name """
-
-        # find_all() encapsulates the query object, resource should not interact with database at all
         return {"stores": [store.json() for store in StoreModel.find_all()]}, 200
