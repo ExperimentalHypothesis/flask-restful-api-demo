@@ -65,7 +65,7 @@ class User(Resource):
         try:
             user = UserModel.get_user_by_id(id)
         except:
-            return {"msg": SERVER_ERROR}
+            return {"msg": SERVER_ERROR}, 500
 
         if user:
             user.delete_from_db()

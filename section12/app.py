@@ -38,14 +38,15 @@ def token_blacklisted_callback(decrypted_token):
 
 
 # creating api endpoints
-api.add_resource(UserRegister, "/register")
 api.add_resource(Item, "/item/<string:name>")
 api.add_resource(Items, "/items")
 api.add_resource(Store, "/store/<string:name>")
 api.add_resource(Stores, "/stores")
+api.add_resource(UserRegister, "/register")
 api.add_resource(User, "/user/<int:id>")
 api.add_resource(UserLogin, "/login")
 api.add_resource(UserLogout, "/logout")
+
 api.add_resource(TokenRefresh, "/refresh")
 
 
