@@ -22,6 +22,7 @@ SERVER_ERROR = "Server error."
 NOT_FOUND_ERROR = "User '{}' not found."
 INVALID_CREDENTIALS_ERROR = "Invalid credentials."
 NOT_CONFIRMED_ERROR = "You have not confirmed registeration, please check your email {}."
+USER_CONFIRMED = "User confirmed."
 
 user_schema = UserSchema()
 
@@ -118,3 +119,18 @@ class TokenRefresh(Resource):
 
         new_token = create_access_token(identity=current_user_id, fresh=False)
         return {"access_token": new_token}, 200
+
+
+class UserConfirm(Resource):
+    @classmethod
+    def get(cls, user_id: int):
+        try:
+            user = UserModel.get_user_by_id(user_id)
+        except:
+            return {"message": SERVER_ERROR}, 500
+
+        if user:
+            user.activated = True
+            user.save_to_db()
+            return {"message": USER_CONFIRMED}
+        return {"message": NOT_FOUND_ERROR.format(user.username)}, 404

@@ -6,7 +6,7 @@ from flask import Flask, jsonify, jsonify
 from flask_restful import Api
 from flask_jwt_extended import JWTManager  # will need Bearer in the header not JWT
 
-from resources.user import UserRegister, User, UserLogin, UserLogout, TokenRefresh
+from resources.user import UserRegister, User, UserLogin, UserLogout, TokenRefresh, UserConfirm
 from resources.item import Item, Items
 from resources.store import Store, Stores
 from marshmallow import ValidationError
@@ -50,7 +50,7 @@ api.add_resource(User, "/user/<int:id>")
 api.add_resource(UserLogin, "/login")
 api.add_resource(UserLogout, "/logout")
 api.add_resource(TokenRefresh, "/refresh")
-
+api.add_resource(UserConfirm, "/user_confirm/<int:user_id>")
 
 @app.route("/")
 def index():
