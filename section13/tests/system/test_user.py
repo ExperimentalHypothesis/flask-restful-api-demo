@@ -35,9 +35,9 @@ def test_register_new_user(test_client_db):
     new_user = UserModel.get_user_by_username("testname")
     assert new_user is None
 
-    res = test_client_db.post(
-        "register", data={"username": "testname", "password": "testpwd"}
-    )
+    headers = {"content-type": "application/json"}
+    data = {"username": "testname", "password": "testpwd"}
+    res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
     assert res.status_code == 201
     assert json.loads(res.data) == {"message": "User 'testname' added successfully."}
 
@@ -48,24 +48,24 @@ def test_register_new_user(test_client_db):
 
 
 def test_register_duplicated_user(test_client_db):
-    test_client_db.post(
-        "register", data={"username": "testname", "password": "testpwd"}
-    )
-    res = test_client_db.post(
-        "register", data={"username": "testname", "password": "testpwd"}
-    )
+    headers = {"content-type": "application/json"}
+    data = {"username": "testname", "password": "testpwd"}
+    res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
+    res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
     assert res.status_code == 400
     assert json.loads(res.data) == {"message": "User 'testname' already exists."}
 
 
 def test_get_existing_user(test_client_db):
-    res = test_client_db.post(
-        "register", data={"username": "testname", "password": "testpwd"}
-    )
+    headers = {"content-type": "application/json"}
+    data = {"username": "testname", "password": "testpwd"}
+    res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
     assert res.status_code == 201
     res = test_client_db.get("user/1")
     assert res.status_code == 200
-    assert json.loads(res.data) == UserModel.get_user_by_username("testname").json()
+    assert json.loads(res.data) == {"id":1,
+                                    "username": "testname",
+                                    }
 
 
 def test_get_nonexisting_user(test_client_db):
@@ -75,9 +75,9 @@ def test_get_nonexisting_user(test_client_db):
 
 
 def test_delete_existing_user(test_client_db):
-    res = test_client_db.post(
-        "register", data={"username": "testname", "password": "testpwd"}
-    )
+    headers = {"content-type": "application/json"}
+    data = {"username": "testname", "password": "testpwd"}
+    res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
     assert res.status_code == 201
     res = test_client_db.delete("user/1")
     assert res.status_code == 200
@@ -91,14 +91,12 @@ def test_delete_nonexisting_user(test_client_db):
 
 
 def test_user_valid_login(test_client_db):
-    test_client_db.post(
-        "register", data={"username": "testname", "password": "testpwd"}
-    )
+    headers = {"content-type": "application/json"}
+    data = {"username": "testname", "password": "testpwd"}
+    res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
     user_from_db = UserModel.get_user_by_username("testname")
 
-    res = test_client_db.post(
-        "login", data={"username": "testname", "password": "testpwd"}
-    )
+    res = test_client_db.post("login", data=json.dumps(data), headers=headers)
     assert res.status_code == 200
     assert "access_token" in json.loads(res.data)
     assert "refresh_token" in json.loads(res.data)
@@ -107,34 +105,36 @@ def test_user_valid_login(test_client_db):
 
 
 def test_user_invalid_login(test_client_db):
-    res = test_client_db.post(
-        "login", data={"username": "testname", "password": "testpwd"}
-    )
+    # try to login without being registered
+    headers = {"content-type": "application/json"}
+    data = {"username": "testname", "password": "testpwd"}
+    res = test_client_db.post("login", data=json.dumps(data), headers=headers)
     assert res.status_code == 401
     assert json.loads(res.data) == {"msg": "Invalid credentials."}
 
-    test_client_db.post(
-        "register", data={"username": "testname", "password": "testpwd"}
-    )
+    # try to login with wrong username
+    test_client_db.post("register", data=json.dumps(data), headers=headers)
     res = test_client_db.post(
-        "login", data={"username": "testnamewrong", "password": "testpwd"}
-    )
+        "login", data=json.dumps({"username": "testnamewrong", "password": "testpwd"}), headers=headers)
     assert res.status_code == 401
     assert json.loads(res.data) == {"msg": "Invalid credentials."}
 
-    res = test_client_db.post(
-        "login", data={"username": "testname", "password": "testpwdwrong"}
-    )
+    # try to login with wrong pssword
+    res = test_client_db.post("login",
+                              data=json.dumps({"username": "testname", "password": "testpwdwrong"}),
+                              headers=headers)
     assert res.status_code == 401
     assert json.loads(res.data) == {"msg": "Invalid credentials."}
 
 
 def test_user_logout(test_client_db):
     # mam nejakyho usera
-    UserModel("testname", "testpwd").save_to_db()
+    UserModel(username="testname", password="testpwd").save_to_db()
     # kterej se logne
+    headers = {"content-type": "application/json"}
+    data = {"username": "testname", "password": "testpwd"}
     auth_res = test_client_db.post(
-        "login", data={"username": "testname", "password": "testpwd"}
+        "login", data=json.dumps(data), headers=headers
     )
     assert auth_res.status_code == 200
     # ziskam token kterej mi to vrati v responsi
@@ -162,11 +162,11 @@ def test_user_logout(test_client_db):
 
 def test_refresh_token(test_client_db):
     # mam nejakyho usera
-    UserModel("testname", "testpwd").save_to_db()
+    UserModel(username="testname", password="testpwd").save_to_db()
     # kterej se logne
-    auth_res = test_client_db.post(
-        "login", data={"username": "testname", "password": "testpwd"}
-    )
+    headers = {"content-type": "application/json"}
+    data = {"username": "testname", "password": "testpwd"}
+    auth_res = test_client_db.post("login", data=json.dumps(data), headers=headers)
     # ziskam jeho refresh token
     refresh_token = json.loads(auth_res.data)["refresh_token"]
     # kterej poslu v headru na tu routu
