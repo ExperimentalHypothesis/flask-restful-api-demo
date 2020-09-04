@@ -28,19 +28,8 @@ def test_client_db():
     ctx.pop()
 
 
-def test_json(test_client_db):
-    item = ItemModel("test", 19.99, 1)
-    item.save_to_db()
-    expected = {"id": 1,
-                "name": "test",
-                "price": 19.99,
-                "store_id": 1
-    }
-    assert expected == item.json()
-
-
 def test_find_by_name(test_client_db):
-    item = ItemModel("test", 19.99, 1)
+    item = ItemModel(name="test", price=19.99, store_id=1)
     item.save_to_db()
     found = ItemModel.find_item_by_name("test")
     assert found.name == item.name
@@ -50,8 +39,8 @@ def test_find_by_name(test_client_db):
 
 
 def test_find_all(test_client_db):
-    first = ItemModel("first", 1.09, 1)
-    second = ItemModel("second", 2.09, 1)
+    first = ItemModel(name="first", price=1.09, store_id=1)
+    second = ItemModel(name="second", price=2.09, store_id=1)
     first.save_to_db()
     second.save_to_db()
     qry_res = ItemModel.find_all()
@@ -59,7 +48,7 @@ def test_find_all(test_client_db):
 
 
 def test_save_delete(test_client_db):
-    one = ItemModel("one", 1.99, 1)
+    one = ItemModel(name="one", price=1.99, store_id=1)
 
     found = ItemModel.find_item_by_name("one")
     assert found is None

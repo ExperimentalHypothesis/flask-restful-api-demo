@@ -29,46 +29,8 @@ def test_client_db():
     ctx.pop()
 
 
-def test_json(test_client_db):
-    store = StoreModel("test")
-    store.save_to_db()
-    expected = {
-            "id": 1,
-            "name": "test",
-            "items": [],
-        }
-    assert expected == store.json()
-
-    # nonempty
-    store1 = StoreModel("testing")
-    store1.save_to_db()
-    item1 = ItemModel("one", 10, 2)
-    item2 = ItemModel("two", 10, 2)
-    item1.save_to_db()
-    item2.save_to_db()
-    expected = {
-            "id": 2,
-            "name": "testing",
-            "items": [
-                {
-                    "id": 1,
-                    "name": "one",
-                    "price": 10,
-                    "store_id": 2,
-                },
-                {
-                    "id": 2,
-                    "name": "two",
-                    "price": 10,
-                    "store_id": 2,
-                },
-            ],
-        }
-    assert expected == store1.json()
-
-
 def test_find_by_name(test_client_db):
-    store = StoreModel("first")
+    store = StoreModel(name="first")
     store.save_to_db()
 
     found = StoreModel.find_by_name("first")
@@ -76,10 +38,10 @@ def test_find_by_name(test_client_db):
     assert found.id == 1
     assert list(found.items) == []
 
-    store = StoreModel("second")
+    store = StoreModel(name="second")
     store.save_to_db()
-    i1 = ItemModel("test", 10, 2)
-    i2 = ItemModel("testing", 11, 2)
+    i1 = ItemModel(name="test", price=10, store_id=2)
+    i2 = ItemModel(name="testing", price=11, store_id=2)
     i1.save_to_db()
     i2.save_to_db()
     found = StoreModel.find_by_name("second")
@@ -103,9 +65,9 @@ def test_find_by_name(test_client_db):
 
 
 def test_find_all(test_client_db):
-    s1 = StoreModel("first")
-    s2 = StoreModel("second")
-    s3 = StoreModel("third")
+    s1 = StoreModel(name="first")
+    s2 = StoreModel(name="second")
+    s3 = StoreModel(name="third")
     s1.save_to_db()
     s2.save_to_db()
     s3.save_to_db()
@@ -113,7 +75,7 @@ def test_find_all(test_client_db):
 
 
 def test_save_delete(test_client_db):
-    s = StoreModel("test")
+    s = StoreModel(name="test")
     found = StoreModel.find_by_name("test")
     assert found is None
 

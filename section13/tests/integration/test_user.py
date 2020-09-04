@@ -28,15 +28,8 @@ def test_client_db():
     ctx.pop()
 
 
-def test_json(test_client_db):
-    u = UserModel("test", "passtest")
-    u.save_to_db()
-    expected = {"id": 1, "username": "test"}
-    assert expected == u.json()
-
-
 def test_save_delete(test_client_db):
-    u = UserModel("test", "passtest")
+    u = UserModel(username="test", password="passtest")
     found_by_id = u.get_user_by_id(1)
     assert found_by_id is None
 
@@ -50,7 +43,7 @@ def test_save_delete(test_client_db):
 
 
 def test_get_user_by_id(test_client_db):
-    u = UserModel("test", "passtest")
+    u = UserModel(username="test", password="passtest")
     u.save_to_db()
     found_by_id = u.get_user_by_id(1)
     assert found_by_id.username == "test"
