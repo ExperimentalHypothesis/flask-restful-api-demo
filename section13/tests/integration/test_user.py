@@ -49,4 +49,3 @@ def test_get_user_by_id(test_client_db):
     assert found_by_id.username == "test"
     assert found_by_id.password == "passtest"
     assert found_by_id.id == 1
-

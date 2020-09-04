@@ -88,5 +88,3 @@ def test_save_delete(test_client_db):
     s.delete_from_db()
     found = StoreModel.find_by_name("test")
     assert found is None
-
-

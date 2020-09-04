@@ -17,7 +17,9 @@ app = Flask(__name__)
 app.secret_key = "sadaddaf"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///data.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URL", "sqlite:///data.db"
+)
 app.config["PROPAGATE_EXCEPTIONS"] = True
 app.config["JWT_SECRET_KEY"] = "asdlasdjoadosadjoifjd"
 app.config["JWT_BLACKLIST_ENABLED"] = True

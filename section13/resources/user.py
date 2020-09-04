@@ -55,7 +55,10 @@ class User(Resource):
             return {"msg": SERVER_ERROR}, 500
 
         if user:
-            return user_schema.dump(user), 200  # the has not changed with flask-marshmallow
+            return (
+                user_schema.dump(user),
+                200,
+            )  # the has not changed with flask-marshmallow
         return {"msg": NOT_FOUND_ERROR.format(id)}, 404
 
     @classmethod

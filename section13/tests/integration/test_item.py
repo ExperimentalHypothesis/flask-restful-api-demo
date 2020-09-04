@@ -60,4 +60,3 @@ def test_save_delete(test_client_db):
     one.delete_from_db()
     found = ItemModel.find_item_by_name("one")
     assert found is None
-

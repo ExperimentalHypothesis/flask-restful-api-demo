@@ -33,10 +33,12 @@ class Item(Resource):
     @classmethod
     # @fresh_jwt_required  # this will accept only newly generated fresh token - the one you get after loging in
     def post(cls, name: str):
-        """ endpoint for creating an item, it does not ac  cept full json, but parses it and uses only {price: <float>} """
+        """ endpoint for creating an item, it does not accept full json, but parses it and uses only {price: <float>} """
 
         received_json = item_schema.load(request.get_json())
-        received_json["name"] = name  # adding name from path to json that will be loaded
+        received_json[
+            "name"
+        ] = name  # adding name from path to json that will be loaded
 
         if ItemModel.find_item_by_name(name):
             return {"message": ALREADY_EXISTS_ERROR.format(name)}, 400
@@ -52,10 +54,15 @@ class Item(Resource):
     # @jwt_required
     def delete(cls, name: str):
         """ endpoint for deleting an item by name """
-        item = ItemModel.find_item_by_name(name)
+        try:
+            item = ItemModel.find_item_by_name(name)
+        except:
+            return {"message": SERVER_ERROR}, 500
         if item:
             item.delete_from_db()
-        return {"message": ITEM_DELETED.format(name)}
+            return {"message": ITEM_DELETED.format(name)}
+        return {"message": NOT_FOUND_ERROR.format(name)}, 404
+
 
     @classmethod
     def put(cls, name: str):

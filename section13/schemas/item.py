@@ -8,7 +8,12 @@ class ItemSchema(ma.Schema):
 
     class Meta:
         model = ItemModel
-        fields = ("id", "name", "price", "store_id") # timhle rikam jaky atributy budu posilat na odpoved
+        fields = (
+            "id",
+            "name",
+            "price",
+            "store_id",
+        )  # timhle rikam jaky atributy budu posilat na odpoved
         # dump_only = ("id")  # tohle neposilam, to prida sqlalchemy
-        # load_only = ("name",)
+        # load_only = ("price", "store_id")  # to co posle ven jako response kdy zavolam ten endpoint
         include_fk = True

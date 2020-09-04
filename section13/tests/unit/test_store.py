@@ -10,5 +10,3 @@ def test_repr():
     store = StoreModel(name="test")
     expected = "<StoreModel test>"
     assert expected == store.__repr__()
-
-
