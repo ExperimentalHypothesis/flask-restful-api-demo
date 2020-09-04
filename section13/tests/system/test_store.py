@@ -36,24 +36,28 @@ def test_get_all_stores_empty(test_client_db):
     assert json.loads(res.data) == {"stores": []}
 
 
-def test_get_all_stores_nonempyt(test_client_db):
-    s = StoreModel("test")
+def test_get_all_stores_nonempty(test_client_db):
+    s = StoreModel(name="test")
     s.save_to_db()
     res = test_client_db.get("/stores")
     found_store = StoreModel.find_by_name("test")
     assert res.status_code == 200
-    assert json.loads(res.data) == {"stores": [found_store.json()]}
+    assert json.loads(res.data) == {"stores": [{"id": 1, "items": [], "name": "test"}]}
 
 
 def test_get_one_existing_store(test_client_db):
-    s = StoreModel("teststore")
+    s = StoreModel(name="teststore")
     s.save_to_db()
-    i = ItemModel("testitem", 10, 1)
+    i = ItemModel(name="testitem", price=10, store_id=1)
     i.save_to_db()
     found_store = StoreModel.find_by_name("teststore")
     res = test_client_db.get("/store/teststore")
     assert res.status_code == 200
-    assert json.loads(res.data) == found_store.json()
+    assert json.loads(res.data) == {
+        "id": 1,
+        "name": "teststore",
+        "items": [{"id": 1, "name": "testitem", "price": 10.0, "store_id": 1}],
+    }
 
 
 def test_get_one_nonexisting_store(test_client_db):
@@ -65,7 +69,7 @@ def test_get_one_nonexisting_store(test_client_db):
 def test_post_store(test_client_db):
     res = test_client_db.post("/store/teststore")
     assert res.status_code == 201
-    assert json.loads(res.data) == StoreModel.find_by_name("teststore").json()
+    assert json.loads(res.data) == {"id": 1, "name": "teststore", "items": []}
 
 
 def test_post_duplicate_store(test_client_db):

@@ -43,12 +43,7 @@ def test_get_all_items_non_empty(test_client_db):
     res = test_client_db.get("/items")
     assert res.status_code == 200
     assert json.loads(res.data) == {
-        "items": [{
-            "id": 1,
-            "name": "test",
-            "price": 10,
-            "store_id": 1
-        }]
+        "items": [{"id": 1, "name": "test", "price": 10, "store_id": 1}]
     }
 
 
@@ -57,12 +52,7 @@ def test_get_single_existing_item(test_client_db):
     i.save_to_db()
     res = test_client_db.get("/item/test")
     assert res.status_code == 200
-    assert json.loads(res.data) == {
-        "id": 1,
-        "name": "test",
-        "price": 10,
-        "store_id": 1
-    }
+    assert json.loads(res.data) == {"id": 1, "name": "test", "price": 10, "store_id": 1}
 
 
 def test_get_single_nonexisting_item(test_client_db):
@@ -83,6 +73,7 @@ def test_post_item(test_client_db):
         "price": 12,
         "store_id": 1,
     }
+
 
 def test_post_duplicate_item(test_client_db):
     headers = {"content-type": "application/json"}

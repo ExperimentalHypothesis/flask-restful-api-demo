@@ -63,7 +63,6 @@ class Item(Resource):
             return {"message": ITEM_DELETED.format(name)}
         return {"message": NOT_FOUND_ERROR.format(name)}, 404
 
-
     @classmethod
     def put(cls, name: str):
         """ endpoint for updating/creating an item by name """
