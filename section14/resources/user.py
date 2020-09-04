@@ -88,7 +88,7 @@ class UserLogin(Resource):
                 access_token = create_access_token(identity=user.id, fresh=True)
                 refresh_token = create_refresh_token(identity=user.id)
                 return {"access_token": access_token, "refresh_token": refresh_token}, 200
-            return {"msg": NOT_CONFIRMED_ERROR.format(user.username)}
+            return {"msg": NOT_CONFIRMED_ERROR.format(user.username)}, 401
         return {"msg": INVALID_CREDENTIALS_ERROR}, 401
 
 
@@ -132,5 +132,5 @@ class UserConfirm(Resource):
         if user:
             user.activated = True
             user.save_to_db()
-            return {"message": USER_CONFIRMED}
-        return {"message": NOT_FOUND_ERROR.format(user.username)}, 404
+            return {"message": USER_CONFIRMED}, 200
+        return {"message": NOT_FOUND_ERROR.format(user_id)}, 404

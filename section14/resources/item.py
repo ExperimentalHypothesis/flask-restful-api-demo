@@ -52,10 +52,14 @@ class Item(Resource):
     # @jwt_required
     def delete(cls, name: str):
         """ endpoint for deleting an item by name """
-        item = ItemModel.find_item_by_name(name)
+        try:
+            item = ItemModel.find_item_by_name(name)
+        except:
+            return {"message": SERVER_ERROR}, 500
         if item:
             item.delete_from_db()
-        return {"message": ITEM_DELETED.format(name)}
+            return {"message": ITEM_DELETED.format(name)}
+        return {"message": NOT_FOUND_ERROR.format(name)}, 404
 
     @classmethod
     def put(cls, name: str):

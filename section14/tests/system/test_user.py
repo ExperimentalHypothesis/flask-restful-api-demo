@@ -91,11 +91,15 @@ def test_delete_nonexisting_user(test_client_db):
 
 
 def test_user_valid_login(test_client_db):
+    # register a user
     headers = {"content-type": "application/json"}
     data = {"username": "testname", "password": "testpwd"}
-    res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
-    user_from_db = UserModel.get_user_by_username("testname")
+    test_client_db.post("/register", data=json.dumps(data), headers=headers)
 
+    # confirm the user
+    test_client_db.get("/user_confirm/1")
+
+    # login the user
     res = test_client_db.post("login", data=json.dumps(data), headers=headers)
     assert res.status_code == 200
     assert "access_token" in json.loads(res.data)
@@ -104,7 +108,36 @@ def test_user_valid_login(test_client_db):
     assert json.loads(res.data)["refresh_token"] != ""
 
 
-def test_user_invalid_login(test_client_db):
+def test_user_confirm(test_client_db):
+    # register
+    headers = {"content-type": "application/json"}
+    data = {"username": "testname", "password": "testpwd"}
+    test_client_db.post("/register", data=json.dumps(data), headers=headers)
+
+    # activate the existing user
+    res = test_client_db.get("/user_confirm/1")
+    assert res.status_code == 200
+    assert json.loads(res.data) == {"message": "User confirmed."}
+
+    # activate the non existing user --> error
+    res = test_client_db.get("/user_confirm/2")
+    assert res.status_code == 404
+    assert json.loads(res.data) == {"message": "User '2' not found."}
+
+
+
+def test_user_not_confirmed_login(test_client_db):
+    # register
+    headers = {"content-type": "application/json"}
+    data = {"username": "testname", "password": "testpwd"}
+    test_client_db.post("/register", data=json.dumps(data), headers=headers)
+
+    # registered (but not activated) tries to log in
+    res = test_client_db.post("/login", data=json.dumps(data), headers=headers)
+    assert res.status_code == 401
+    assert json.loads(res.data) == {"msg": "You have not confirmed registeration, please check your email testname."}
+
+def test_user_invalid_credentials_login(test_client_db):
     # try to login without being registered
     headers = {"content-type": "application/json"}
     data = {"username": "testname", "password": "testpwd"}
@@ -128,15 +161,16 @@ def test_user_invalid_login(test_client_db):
 
 
 def test_user_logout(test_client_db):
-    # mam nejakyho usera
+    # create a user
     UserModel(username="testname", password="testpwd").save_to_db()
-    # kterej se logne
+    # confirm the user
+    test_client_db.get("/user_confirm/1")
+    # login
     headers = {"content-type": "application/json"}
     data = {"username": "testname", "password": "testpwd"}
-    auth_res = test_client_db.post(
-        "login", data=json.dumps(data), headers=headers
-    )
+    auth_res = test_client_db.post("login", data=json.dumps(data), headers=headers)
     assert auth_res.status_code == 200
+
     # ziskam token kterej mi to vrati v responsi
     auth_token = json.loads(auth_res.data)["access_token"]
 
@@ -163,6 +197,8 @@ def test_user_logout(test_client_db):
 def test_refresh_token(test_client_db):
     # mam nejakyho usera
     UserModel(username="testname", password="testpwd").save_to_db()
+    # confirm the user
+    test_client_db.get("/user_confirm/1")
     # kterej se logne
     headers = {"content-type": "application/json"}
     data = {"username": "testname", "password": "testpwd"}
