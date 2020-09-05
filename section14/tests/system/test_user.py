@@ -12,6 +12,7 @@ def test_client_db():
 
     # set up
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///"
+    app.config["JWT_SECRET_KEY"] = "testing"
     with app.app_context():
         db.init_app(app)
         db.create_all()
