@@ -3,11 +3,8 @@ from typing import Dict, Union
 from db import db
 
 from flask import request, url_for
+from libs.mailgun import Mailgun
 
-MAILGUN_DOMAIN = "sandbox6420919ab29b42289d43ff37f7689072.mailgun.org"
-MAILGUN_API_KEY = "245d6d0fc380fba7fb1ad3125649ebf2-7cd1ac2b-47fb3ac2"
-FROM_TITLE = "Store API"
-FROM_EMAIL = "postmaster@sandbox6420919ab29b42289d43ff37f7689072.mailgun.org"
 
 UserJSON = Dict[str, Union[int, str]]
 
@@ -37,23 +34,11 @@ class UserModel(db.Model):
         # build the link the user will click on,
         # it should be http://localhost:5000/user_confirm/1)
         link = request.url_root[:-1] + url_for("userconfirm", user_id=self.id)
-        # return post(
-        #     f"http://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
-        #     auth=("api", MAILGUN_API_KEY),
-        #     data={
-        #         "from": f"{FROM_TITLE} <{FROM_EMAIL}>",
-        #         "to": self.email,
-        #         "subject": "Registration confirmation",
-        #         "text": "Please click this link: " + link,
-        #     }
-        # )
-        return post(
-            f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
-            auth=("api", f"{MAILGUN_API_KEY}"),
-            data={"from": f"{FROM_TITLE} <{FROM_EMAIL}>",
-                  "to": self.email,
-                  "subject": "Confirm email",
-                  "text": "Clickni! " + link})
+        email = self.email
+        subject = "Confirm Registeration"
+        text = f"Please click this link: {link}"
+        Mailgun.send_email(email, subject, text)
+
 
     @classmethod
     def get_user_by_id(cls, id: int) -> "UserModel":
