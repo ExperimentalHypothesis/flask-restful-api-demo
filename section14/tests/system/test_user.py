@@ -1,5 +1,4 @@
 from models.user import UserModel
-from werkzeug.security import safe_str_cmp
 
 import json
 
@@ -36,10 +35,10 @@ def test_register_new_user(test_client_db):
     assert new_user is None
 
     headers = {"content-type": "application/json"}
-    data = {"username": "testname", "password": "testpwd"}
+    data = {"username": "testname", "password": "testpwd", "email": "test@test.com"}
     res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
     assert res.status_code == 201
-    assert json.loads(res.data) == {"message": "User 'testname' added successfully."}
+    assert json.loads(res.data) == {"message": "User '{}' added successfully. Email was send to confirm you identity".format("testname")}
 
     new_user = UserModel.get_user_by_username("testname")
     assert new_user is not None
@@ -49,7 +48,7 @@ def test_register_new_user(test_client_db):
 
 def test_register_duplicated_user(test_client_db):
     headers = {"content-type": "application/json"}
-    data = {"username": "testname", "password": "testpwd"}
+    data = {"username": "testname", "password": "testpwd", "email": "test@test.com"}
     res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
     res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
     assert res.status_code == 400
@@ -58,13 +57,14 @@ def test_register_duplicated_user(test_client_db):
 
 def test_get_existing_user(test_client_db):
     headers = {"content-type": "application/json"}
-    data = {"username": "testname", "password": "testpwd"}
+    data = {"username": "testname", "password": "testpwd", "email": "test@test.com"}
     res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
     assert res.status_code == 201
     res = test_client_db.get("user/1")
     assert res.status_code == 200
     assert json.loads(res.data) == {"id":1,
                                     "username": "testname",
+                                    "email": "test@test.com"
                                     }
 
 
@@ -76,7 +76,7 @@ def test_get_nonexisting_user(test_client_db):
 
 def test_delete_existing_user(test_client_db):
     headers = {"content-type": "application/json"}
-    data = {"username": "testname", "password": "testpwd"}
+    data = {"username": "testname", "password": "testpwd",  "email": "test@test.com"}
     res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
     assert res.status_code == 201
     res = test_client_db.delete("user/1")
@@ -93,7 +93,7 @@ def test_delete_nonexisting_user(test_client_db):
 def test_user_valid_login(test_client_db):
     # register a user
     headers = {"content-type": "application/json"}
-    data = {"username": "testname", "password": "testpwd"}
+    data = {"username": "testname", "password": "testpwd", "email": "test@test.com"}
     test_client_db.post("/register", data=json.dumps(data), headers=headers)
 
     # confirm the user
@@ -111,7 +111,7 @@ def test_user_valid_login(test_client_db):
 def test_existing_user_confirm(test_client_db):
     # register
     headers = {"content-type": "application/json"}
-    data = {"username": "testname", "password": "testpwd"}
+    data = {"username": "testname", "password": "testpwd",  "email": "test@test.com"}
     test_client_db.post("/register", data=json.dumps(data), headers=headers)
 
     # activate the existing user
@@ -130,7 +130,7 @@ def test_nonexisting_user_confirm(test_client_db):
 def test_user_not_confirmed_login(test_client_db):
     # register
     headers = {"content-type": "application/json"}
-    data = {"username": "testname", "password": "testpwd"}
+    data = {"username": "testname", "password": "testpwd",  "email": "test@test.com"}
     test_client_db.post("/register", data=json.dumps(data), headers=headers)
 
     # registered (but not activated) tries to log in
@@ -142,7 +142,7 @@ def test_user_not_confirmed_login(test_client_db):
 def test_user_invalid_credentials_login(test_client_db):
     # try to login without being registered
     headers = {"content-type": "application/json"}
-    data = {"username": "testname", "password": "testpwd"}
+    data = {"username": "testname", "password": "testpwd",  "email": "test@test.com"}
     res = test_client_db.post("login", data=json.dumps(data), headers=headers)
     assert res.status_code == 401
     assert json.loads(res.data) == {"msg": "Invalid credentials."}
@@ -164,7 +164,7 @@ def test_user_invalid_credentials_login(test_client_db):
 
 def test_user_logout(test_client_db):
     # create a user
-    UserModel(username="testname", password="testpwd").save_to_db()
+    UserModel(username="testname", password="testpwd", email="test@test.com").save_to_db()
     # confirm the user
     test_client_db.get("/user_confirm/1")
     # login
@@ -198,7 +198,7 @@ def test_user_logout(test_client_db):
 
 def test_refresh_token(test_client_db):
     # mam nejakyho usera
-    UserModel(username="testname", password="testpwd").save_to_db()
+    UserModel(username="testname", password="testpwd", email="test@test.com").save_to_db()
     # confirm the user
     test_client_db.get("/user_confirm/1")
     # kterej se logne

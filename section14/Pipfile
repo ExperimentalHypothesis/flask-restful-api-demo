@@ -16,6 +16,7 @@ psycopg2-binary = "*"
 marshmallow = "*"
 flask-marshmallow = "*"
 marshmallow-sqlalchemy = "*"
+requests = "*"
 
 [requires]
 python_version = "3.7"

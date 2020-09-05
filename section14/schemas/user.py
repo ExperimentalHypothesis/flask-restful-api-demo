@@ -7,6 +7,6 @@ class UserSchema(ma.Schema):
 
     class Meta:
         model = UserModel  # flask-marmallow will no create object directly based on the database schema
-        fields = ("username", "password", "id")
+        fields = ("username", "password", "id", "email")
         load_only = ("password",)  # tohle jenom prijimat ale nikdy neposilat ven jako dzejson
         dump_only = ("id", "activated")  # tohle neni potreba davat to prida sqlalch

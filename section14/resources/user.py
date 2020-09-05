@@ -1,3 +1,5 @@
+import traceback
+
 from flask import request, make_response, render_template
 from werkzeug.security import safe_str_cmp
 from flask_jwt_extended import (
@@ -12,10 +14,9 @@ from flask_restful import Resource, reqparse
 from blacklist import BLACKLIST
 from models.user import UserModel
 from schemas.user import UserSchema
-from marshmallow import ValidationError
 
 ALREADY_EXISTS_ERROR = "User '{}' already exists."
-SUCCESSFULLY_ADDED = "User '{}' added successfully."
+SUCCESSFULLY_CREATED = "User '{}' added successfully. Email was send to confirm you identity"
 SUCCESSFULLY_DELETED = "User '{}' deleted successfully."
 SUCCESSFULLY_LOGOUT = "Successfully loged out 'id={user_id}'."
 SERVER_ERROR = "Server error."
@@ -23,6 +24,7 @@ NOT_FOUND_ERROR = "User '{}' not found."
 INVALID_CREDENTIALS_ERROR = "Invalid credentials."
 NOT_CONFIRMED_ERROR = "You have not confirmed registeration, please check your email {}."
 USER_CONFIRMED = "User confirmed."
+FAILED_TO_CREATE = "Failed to create user."
 
 user_schema = UserSchema()
 
@@ -35,14 +37,23 @@ class UserRegister(Resource):
         # tady by se to melo nejak loadnout aby se z toho hned udelal objekt user_model, ale nefunguje to nechava dict
         # co ale dela je ze checkuje argumenty, jestli sedej s modelem..
         user_model = user_schema.load(request.get_json())
-        print(user_model, type(user_model))
+
         if UserModel.get_user_by_username(user_model["username"]):
             return {"message": ALREADY_EXISTS_ERROR.format(user_model["username"])}, 400
 
-        user_model = UserModel(**user_model)
-        user_model.save_to_db()
+        # TODO udelat test
+        if UserModel.get_user_by_email(user_model["email"]):
+            return {"message": ALREADY_EXISTS_ERROR.format(user_model["email"])}, 400
 
-        return {"message": SUCCESSFULLY_ADDED.format(user_model.username)}, 201
+        user_model = UserModel(**user_model)
+
+        try:
+            user_model.save_to_db()
+            user_model.send_confirmation_email()
+            return {"message": SUCCESSFULLY_CREATED.format(user_model.username)}, 201
+        except:
+            traceback.print_exc()
+            return {"message": FAILED_TO_CREATE}, 500
 
 
 class User(Resource):
@@ -80,7 +91,7 @@ class UserLogin(Resource):
     @classmethod
     def post(cls):
         """ Create tokens for particular user. """
-        user_model = user_schema.load(request.get_json())
+        user_model = user_schema.load(request.get_json(), partial=("email",))  # ignore email field if it is not present
         user = UserModel.get_user_by_username(user_model["username"])
 
         if user and safe_str_cmp(user.password, user_model["password"]):
