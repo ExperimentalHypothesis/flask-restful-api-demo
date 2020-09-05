@@ -108,7 +108,7 @@ def test_user_valid_login(test_client_db):
     assert json.loads(res.data)["refresh_token"] != ""
 
 
-def test_user_confirm(test_client_db):
+def test_existing_user_confirm(test_client_db):
     # register
     headers = {"content-type": "application/json"}
     data = {"username": "testname", "password": "testpwd"}
@@ -117,13 +117,14 @@ def test_user_confirm(test_client_db):
     # activate the existing user
     res = test_client_db.get("/user_confirm/1")
     assert res.status_code == 200
-    assert json.loads(res.data) == {"message": "User confirmed."}
+    assert res.headers["Content-Type"] == "text/html"
+    assert b"Your registration has been confirmed through" in res.data
 
-    # activate the non existing user --> error
-    res = test_client_db.get("/user_confirm/2")
+
+def test_nonexisting_user_confirm(test_client_db):
+    res = test_client_db.get("/user_confirm/1")
     assert res.status_code == 404
-    assert json.loads(res.data) == {"message": "User '2' not found."}
-
+    assert json.loads(res.data) == {"message": "User '1' not found."}
 
 
 def test_user_not_confirmed_login(test_client_db):
@@ -136,6 +137,7 @@ def test_user_not_confirmed_login(test_client_db):
     res = test_client_db.post("/login", data=json.dumps(data), headers=headers)
     assert res.status_code == 401
     assert json.loads(res.data) == {"msg": "You have not confirmed registeration, please check your email testname."}
+
 
 def test_user_invalid_credentials_login(test_client_db):
     # try to login without being registered
