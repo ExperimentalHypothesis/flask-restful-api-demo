@@ -2,7 +2,7 @@ import os
 from requests import Response, post
 from typing import List
 
-
+aaaaaaaaa
 class Mailgun:
     """ Class handling sending emails. """
 
