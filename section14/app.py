@@ -6,12 +6,12 @@ from flask import Flask, jsonify, jsonify
 from flask_restful import Api
 from flask_jwt_extended import JWTManager  # will need Bearer in the header not JWT
 
-from resources.user import UserRegister, User, UserLogin, UserLogout, TokenRefresh, UserConfirm
+from resources.user import UserRegister, User, UserLogin, UserLogout, TokenRefresh
 from resources.item import Item, Items
 from resources.store import Store, Stores
 from marshmallow import ValidationError
 from blacklist import BLACKLIST
-
+from resources.confirmation import Confirmation, ConfirmationByUser
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("APP_SECRET_KEY")
@@ -50,7 +50,10 @@ api.add_resource(User, "/user/<int:id>")
 api.add_resource(UserLogin, "/login")
 api.add_resource(UserLogout, "/logout")
 api.add_resource(TokenRefresh, "/refresh")
-api.add_resource(UserConfirm, "/user_confirm/<int:user_id>")
+
+api.add_resource(Confirmation, "/confirmation/<string:confirmation_id>")  # for html page
+api.add_resource(ConfirmationByUser, "/confirmation/user/<int:user_id>")  # for resending anc testing
+
 
 @app.route("/")
 def index():
