@@ -14,6 +14,7 @@ from flask_restful import Resource, reqparse
 from blacklist import BLACKLIST
 from models.user import UserModel
 from schemas.user import UserSchema
+from libs.mailgun import MailgunException
 
 ALREADY_EXISTS_ERROR = "User '{}' already exists."
 SUCCESSFULLY_CREATED = "User '{}' added successfully. Email was send to confirm you identity"
@@ -51,6 +52,9 @@ class UserRegister(Resource):
             user_model.save_to_db()
             user_model.send_confirmation_email()
             return {"message": SUCCESSFULLY_CREATED.format(user_model.username)}, 201
+        except MailgunException as e:
+            user_model.delete_from_db()
+            return {"message": str(e)}, 500
         except:
             traceback.print_exc()
             return {"message": FAILED_TO_CREATE}, 500

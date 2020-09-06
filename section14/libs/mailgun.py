@@ -2,7 +2,12 @@ import os
 from requests import Response, post
 from typing import List
 
-aaaaaaaaa
+
+class MailgunException(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
+
 class Mailgun:
     """ Class handling sending emails. """
 
@@ -13,10 +18,19 @@ class Mailgun:
 
     @classmethod
     def send_email(cls, email: List[str], subject: str, text: str) -> Response:
-        return post(
-            f"https://api.mailgun.net/v3/{cls.MAILGUN_DOMAIN}/messages",
+        if cls.MAILGUN_DOMAIN is None:
+            raise MailgunException("no domain")
+        if cls.MAILGUN_API_KEY is None:
+            raise MailgunException("no api")
+
+        response = post(f"https://api.mailgun.net/v3/{cls.MAILGUN_DOMAIN}/messages",
             auth=("api", f"{cls.MAILGUN_API_KEY}"),
             data={"from": f"{cls.FROM_TITLE} <{cls.FROM_EMAIL}>",
                   "to": email,
                   "subject": subject,
                   "text": text})
+
+        if response.status_code != 200:
+            raise MailgunException("Email not sent.")
+
+        return response
