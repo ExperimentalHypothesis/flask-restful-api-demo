@@ -1,34 +1,7 @@
 from models.user import UserModel
 import json, os
+from dotenv import load_dotenv
 
-import pytest
-from app import app
-from db import db
-
-
-@pytest.fixture(autouse=True)
-def test_client_db():
-
-    # set up
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///"
-    app.config["JWT_SECRET_KEY"] = "testing"
-
-    with app.app_context():
-        db.init_app(app)
-        db.create_all()
-    testing_client = app.test_client()
-    ctx = app.app_context()
-    ctx.push()
-
-    # do testing
-    yield testing_client
-
-    # tear down
-    with app.app_context():
-        db.session.remove()
-        db.drop_all()
-
-    ctx.pop()
 
 def test_register_new_user(test_client_db):
 
@@ -38,12 +11,12 @@ def test_register_new_user(test_client_db):
     data = {"username": "testname", "password": "testpwd", "email": "kotatko.lukas@gmail.com"}
     res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
     assert res.status_code == 201
-    # assert json.loads(res.data) == {"message": "User '{}' added successfully. Email was send to confirm you identity".format("testname")}
-    #
-    # new_user = UserModel.get_user_by_username("testname")
-    # assert new_user is not None
-    # assert new_user.username == "testname"
-    # assert new_user.password == "testpwd"
+    assert json.loads(res.data) == {"message": "User '{}' added successfully. Email was send to confirm you identity".format("testname")}
+
+    new_user = UserModel.get_user_by_username("testname")
+    assert new_user is not None
+    assert new_user.username == "testname"
+    assert new_user.password == "testpwd"
 
 
 def test_register_duplicated_user(test_client_db):
