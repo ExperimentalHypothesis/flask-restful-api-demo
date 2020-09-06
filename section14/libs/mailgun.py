@@ -23,9 +23,9 @@ class Mailgun:
         if cls.MAILGUN_API_KEY is None:
             raise MailgunException("no api")
 
-        response = post(f"https://api.mailgun.net/v3/{cls.MAILGUN_DOMAIN}/messages",
-            auth=("api", f"{cls.MAILGUN_API_KEY}"),
-            data={"from": f"{cls.FROM_TITLE} <{cls.FROM_EMAIL}>",
+        response = post(f"https://api.mailgun.net/v3/sandbox6420919ab29b42289d43ff37f7689072.mailgun.org/messages",
+            auth=("api", f"245d6d0fc380fba7fb1ad3125649ebf2-7cd1ac2b-47fb3ac2"),
+            data={"from": f"{cls.FROM_TITLE} <some@user.com>",
                   "to": email,
                   "subject": subject,
                   "text": text})

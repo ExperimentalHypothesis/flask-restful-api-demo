@@ -67,10 +67,13 @@ def test_user_valid_login(test_client_db):
     # register a user
     headers = {"content-type": "application/json"}
     data = {"username": "testname", "password": "testpwd", "email": "kotatko.lukas@gmail.com"}
-    test_client_db.post("/register", data=json.dumps(data), headers=headers)
+    res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
+    assert res.status_code == 201
+
+    confirmation_id = UserModel.get_user_by_username("testname").get_latest_confirmation.id
 
     # confirm the user
-    test_client_db.get("/user_confirm/1")
+    test_client_db.get(f"/confirmation/{confirmation_id}")
 
     # login the user
     res = test_client_db.post("login", data=json.dumps(data), headers=headers)
@@ -85,19 +88,24 @@ def test_existing_user_confirm(test_client_db):
     # register
     headers = {"content-type": "application/json"}
     data = {"username": "testname", "password": "testpwd",  "email": "kotatko.lukas@gmail.com"}
-    test_client_db.post("/register", data=json.dumps(data), headers=headers)
+    res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
 
-    # activate the existing user
-    res = test_client_db.get("/user_confirm/1")
+    assert res.status_code == 201
+
+    confirmation_id = UserModel.get_user_by_username("testname").get_latest_confirmation.id
+
+    # confirm the user
+    res = test_client_db.get(f"/confirmation/{confirmation_id}")
+
     assert res.status_code == 200
     assert res.headers["Content-Type"] == "text/html"
     assert b"Your registration has been confirmed through" in res.data
 
 
 def test_nonexisting_user_confirm(test_client_db):
-    res = test_client_db.get("/user_confirm/1")
+    res = test_client_db.get("/confirmation/jdskhfkajdlk32kjk3")
     assert res.status_code == 404
-    assert json.loads(res.data) == {"message": "User '1' not found."}
+    assert json.loads(res.data) == {'message': 'Confirmation reference not found'}
 
 
 def test_user_not_confirmed_login(test_client_db):
@@ -137,9 +145,17 @@ def test_user_invalid_credentials_login(test_client_db):
 
 def test_user_logout(test_client_db):
     # create a user
-    UserModel(username="testname", password="testpwd", email="test@test.com").save_to_db()
+    # register
+    headers = {"content-type": "application/json"}
+    data = {"username": "testname", "password": "testpwd", "email": "kotatko.lukas@gmail.com"}
+    res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
+    assert res.status_code == 201
+
+    confirmation_id = UserModel.get_user_by_username("testname").get_latest_confirmation.id
+
     # confirm the user
-    test_client_db.get("/user_confirm/1")
+    res = test_client_db.get(f"/confirmation/{confirmation_id}")
+
     # login
     headers = {"content-type": "application/json"}
     data = {"username": "testname", "password": "testpwd"}
@@ -170,10 +186,17 @@ def test_user_logout(test_client_db):
 
 
 def test_refresh_token(test_client_db):
-    # mam nejakyho usera
-    UserModel(username="testname", password="testpwd", email="test@test.com").save_to_db()
+    # register
+    headers = {"content-type": "application/json"}
+    data = {"username": "testname", "password": "testpwd", "email": "kotatko.lukas@gmail.com"}
+    res = test_client_db.post("/register", data=json.dumps(data), headers=headers)
+    assert res.status_code == 201
+
+    confirmation_id = UserModel.get_user_by_username("testname").get_latest_confirmation.id
+
     # confirm the user
-    test_client_db.get("/user_confirm/1")
+    res = test_client_db.get(f"/confirmation/{confirmation_id}")
+
     # kterej se logne
     headers = {"content-type": "application/json"}
     data = {"username": "testname", "password": "testpwd"}
