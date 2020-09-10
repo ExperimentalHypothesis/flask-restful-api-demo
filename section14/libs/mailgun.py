@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from requests import Response, post
 from typing import List
 
@@ -11,6 +12,7 @@ class MailgunException(Exception):
 class Mailgun:
     """ Class handling sending emails. """
 
+    load_dotenv(os.path.join(".", ".env"))
     MAILGUN_DOMAIN = os.environ.get("MAILGUN_DOMAIN")
     MAILGUN_API_KEY = os.environ.get("MAILGUN_API_KEY")
     FROM_TITLE = "Store API"

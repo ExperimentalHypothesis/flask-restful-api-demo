@@ -1,6 +1,5 @@
 from models.user import UserModel
 import json, os
-from dotenv import load_dotenv
 
 
 def test_register_new_user(test_client_db):

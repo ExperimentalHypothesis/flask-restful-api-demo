@@ -15,6 +15,11 @@ from resources.confirmation import Confirmation, ConfirmationByUser
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("APP_SECRET_KEY")
+app.config["MAILGUN_DOMAIN"] = os.environ.get("MAILGUN_DOMAIN")
+app.config["MAILGUN_API_KEY"] = os.environ.get("MAILGUN_API_KEY")
+app.config["FROM_EMAIL"] = os.environ.get("FROM_EMAIL")
+
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
@@ -25,6 +30,7 @@ app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = [
     "access",
     "refresh",
 ]  # no matter what they send, they will not be allowed..
+
 
 api = Api(app)
 jwt = JWTManager(app)  # not creating /auth endpoint
